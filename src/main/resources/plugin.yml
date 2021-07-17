@@ -1,0 +1,16 @@
+main: plugin.thirdLife.Main
+name: ThirdLife
+version: 1.0.0
+author: Xuyuan
+api-version: 1.17
+commands:
+  thirdlife:
+    description: Admin command to control
+    alias: tl
+permissions:
+  thirdlife.admin:
+    description: Permission to administrate ThirdLife system
+    default: op
+  thirdlife.bypass:
+    description: Bypass life system
+    default: false
