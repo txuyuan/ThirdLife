@@ -39,6 +39,7 @@ public class TLExec implements CommandExecutor {
                 Config.saveDataS(data, sender);
                 for(Player player: Bukkit.getOnlinePlayers()){
                     player.setDisplayName("§a" + player.getName());
+                    OnPlayerJoin.updateColour(3, player);
                     player.sendMessage("§b(Status)§f All lives have been reset");
                     if(!player.hasPermission("thirdlife.bypass"))
                         player.setGameMode(GameMode.SURVIVAL);

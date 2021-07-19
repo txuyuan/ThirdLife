@@ -24,21 +24,21 @@ public class OnPlayerDeath implements Listener {
                 data.set(uuid, 0);  Config.saveData(data, player);
                 player.setDisplayName("§r" + player.getName());
                 player.setGameMode(GameMode.SPECTATOR);
-                System.out.println("case 1");
                 break;
             case 2:
                 data.set(uuid, 1); Config.saveData(data, player);
                 player.setDisplayName("§c" + player.getName());
-                System.out.println("case 2");
+                OnPlayerJoin.updateColour(1, player);
                 break;
             case 3:
                 data.set(uuid, 2); Config.saveData(data, player);
                 player.setDisplayName("§e" + player.getName());
-                System.out.println("case 3");
+                OnPlayerJoin.updateColour(2, player);
                 break;
             default:
                 data.set(uuid, 2); Config.saveData(data, player);
                 player.setDisplayName("§e" + player.getName());
+                OnPlayerJoin.updateColour(3, player);
                 break;
         }
     }
