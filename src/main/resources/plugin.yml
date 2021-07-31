@@ -1,6 +1,6 @@
 main: plugin.ThirdLife.Main
 name: ThirdLife
-version: 1.0.1
+version: 1.0.3
 author: Xuyuan
 api-version: 1.17
 commands:

@@ -1,6 +1,5 @@
 package plugin.ThirdLife.Listeners;
 
-import com.earth2me.essentials.Essentials;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
