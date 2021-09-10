@@ -12,9 +12,9 @@ public class TLComplete implements TabCompleter {
 
     public List<String> onTabComplete(final CommandSender s, final Command c, final String al, final String[] a) {
         if ((c.getName().equals("thirdlife") || c.getName().equalsIgnoreCase("tl")) && a.length <= 1 && s instanceof Player) {
-            List<String> defList = new ArrayList<String>();
-            List<String> rList = new ArrayList<String>();
-            if(!((Player)s).hasPermission("thirdlife.admin")) {
+            List<String> defList = new ArrayList<>();
+            List<String> rList = new ArrayList<>();
+            if(!s.hasPermission("thirdlife.admin")) {
                 rList.add("§cYou are not allowed to use this command");
                 return rList;
             }

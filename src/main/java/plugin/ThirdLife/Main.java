@@ -15,17 +15,17 @@ import plugin.ThirdLife.Listeners.OnPlayerJoin;
 public class Main extends JavaPlugin {
 
     public void onEnable(){
-        this.getServer().getPluginManager().registerEvents((Listener)new OnPlayerDeath(), (Plugin)this);
-        this.getServer().getPluginManager().registerEvents((Listener)new OnPlayerJoin(), (Plugin)this);
-        this.getCommand("thirdlife").setExecutor((CommandExecutor)new TLExec());
-        this.getCommand("thirdlife").setTabCompleter((TabCompleter)new TLComplete());
+        this.getServer().getPluginManager().registerEvents(new OnPlayerDeath(), this);
+        this.getServer().getPluginManager().registerEvents(new OnPlayerJoin(), this);
+        this.getCommand("thirdlife").setExecutor(new TLExec());
+        this.getCommand("thirdlife").setTabCompleter(new TLComplete());
 
         System.out.println("(ThirdLife) Successfully enabled");
     }
 
     public void onDisable(){
-        HandlerList.unregisterAll((Listener)new OnPlayerDeath());
-        HandlerList.unregisterAll((Listener)new OnPlayerJoin());
+        HandlerList.unregisterAll(new OnPlayerDeath());
+        HandlerList.unregisterAll(new OnPlayerJoin());
         System.out.println("(ThirdLife) Successfully disabled");
     }
 }
