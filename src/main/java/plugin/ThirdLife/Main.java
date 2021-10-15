@@ -1,31 +1,57 @@
 package plugin.ThirdLife;
 
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import plugin.ThirdLife.Commands.TLComplete;
-import plugin.ThirdLife.Commands.TLExec;
-import plugin.ThirdLife.Listeners.OnPlayerDeath;
-import plugin.ThirdLife.Listeners.OnPlayerJoin;
+import plugin.ThirdLife.commands.TLComplete;
+import plugin.ThirdLife.commands.TLExec;
+import plugin.ThirdLife.listeners.OnPlayerDeath;
+import plugin.ThirdLife.listeners.OnPlayerJoin;
+import plugin.ThirdLife.managers.LifeUpdate;
+
+import java.io.IOException;
+import java.util.logging.Level;
 
 
 public class Main extends JavaPlugin {
 
-    public void onEnable(){
+    public void onEnable() {
         this.getServer().getPluginManager().registerEvents(new OnPlayerDeath(), this);
         this.getServer().getPluginManager().registerEvents(new OnPlayerJoin(), this);
         this.getCommand("thirdlife").setExecutor(new TLExec());
         this.getCommand("thirdlife").setTabCompleter(new TLComplete());
 
-        System.out.println("(ThirdLife) Successfully enabled");
+        Bukkit.getOnlinePlayers().forEach(player -> LifeUpdate.loadPlayer(player));
+
+        logInfo("§b(Status)§f Plugin enabled");
     }
 
-    public void onDisable(){
+    public void onDisable() {
         HandlerList.unregisterAll(new OnPlayerDeath());
         HandlerList.unregisterAll(new OnPlayerJoin());
-        System.out.println("(ThirdLife) Successfully disabled");
+        logInfo("§b(Status)§f Plugin enabled");
     }
+
+
+
+    public static Plugin getInstance() {
+        return Bukkit.getPluginManager().getPlugin("ThirdLife");
+    }
+
+    public static void logInfo(String msg) {
+        getInstance().getLogger().log(Level.INFO, msg);
+    }
+
+    public static void logDiskError(IOException e) {
+        getInstance().getLogger().log(Level.SEVERE, "§c(Error)§f Error writing to disk: \n" + e.getStackTrace().toString());
+    }
+
+    public static void logTest(String msg){
+        boolean isDebug = false;
+        if(isDebug)
+            logInfo("§aTest: " + msg);
+    }
+
+
 }

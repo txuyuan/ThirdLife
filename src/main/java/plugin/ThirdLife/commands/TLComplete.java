@@ -1,4 +1,4 @@
-package plugin.ThirdLife.Commands;
+package plugin.ThirdLife.commands;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -14,7 +14,7 @@ public class TLComplete implements TabCompleter {
         if ((c.getName().equals("thirdlife") || c.getName().equalsIgnoreCase("tl")) && a.length <= 1 && s instanceof Player) {
             List<String> defList = new ArrayList<>();
             List<String> rList = new ArrayList<>();
-            if(!s.hasPermission("thirdlife.admin")) {
+            if (!s.hasPermission("thirdlife.admin")) {
                 rList.add("§cYou are not allowed to use this command");
                 return rList;
             }
