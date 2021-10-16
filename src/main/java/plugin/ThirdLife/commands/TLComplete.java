@@ -6,7 +6,9 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TLComplete implements TabCompleter {
 
@@ -15,15 +17,16 @@ public class TLComplete implements TabCompleter {
             List<String> defList = new ArrayList<>();
             List<String> rList = new ArrayList<>();
             if (!s.hasPermission("thirdlife.admin")) {
-                rList.add("§cYou are not allowed to use this command");
+                rList.add("§cYou do not have permission to do this");
                 return rList;
             }
             defList.add("reset");
             defList.add("remove");
             defList.add("add");
-            for (final String str : defList)
-                if (str.indexOf(a[0]) == 0)
-                    rList.add(str);
+            defList.add("newsession");
+
+            rList = defList.stream().filter(str -> str.indexOf(a[0]) == 0).collect(Collectors.toList());
+            Collections.sort(rList, String.CASE_INSENSITIVE_ORDER);
             return rList;
         }
         return null;
