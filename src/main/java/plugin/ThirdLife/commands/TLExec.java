@@ -23,6 +23,7 @@ public class TLExec implements CommandExecutor {
         Bukkit.getOnlinePlayers().forEach(player -> {
             player.sendMessage("§b(Status)§f All lives have been reset to 3");
             LifeUpdate.updateColour(player, 3);
+            GhoulManager.setHasBeenGhoul(player, false);
         });
         Main.logInfo("§b(Status)§f All lives have been reset");
     }
@@ -83,6 +84,8 @@ public class TLExec implements CommandExecutor {
         LifeUpdate.updateColour(player, lives);
         return "§b(Status)§f They now have " + lives + " lives";
     }
+
+
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

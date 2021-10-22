@@ -49,10 +49,11 @@ public class GhoulManager {
     }
 
 
-    public static void setHasBeenGhoul(Player player) {
+    public static void setHasBeenGhoul(Player player, boolean isGhoul) {
         FileConfiguration fileC = getGhoulData();
-        fileC.set(player.getUniqueId().toString(), true);
+        fileC.set(player.getUniqueId().toString(), isGhoul);
         saveGhoulData(fileC);
+        Main.logTest(player + " ghoul " + isGhoul);
     }
 
     public static boolean getHasBeenGhoul(Player player) {
@@ -67,7 +68,7 @@ public class GhoulManager {
     }
 
     private static void saveGhoulData(FileConfiguration fileC) {
-        File file = new File(Bukkit.getPluginManager().getPlugin("ThirdLife").getDataFolder(), "lives.yml");
+        File file = new File(Bukkit.getPluginManager().getPlugin("ThirdLife").getDataFolder(), "ghouls.yml");
         try {
             fileC.save(file);
         } catch (IOException e) {

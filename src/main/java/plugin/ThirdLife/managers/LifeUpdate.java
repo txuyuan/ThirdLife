@@ -71,7 +71,7 @@ public class LifeUpdate {
 
         if (lives == 0) {
             setHealth(player, false);
-            GhoulManager.setHasBeenGhoul(player);
+            GhoulManager.setHasBeenGhoul(player, true);
         } else setHealth(player, true);
 
         Main.logTest(player.getDisplayName());
@@ -92,7 +92,7 @@ public class LifeUpdate {
 
     private static char getColour(int lives) {
         if (lives == -1) return '7';
-        if (lives == 0) return 'd';
+        if (lives == 0) return '4';
         if (lives == 1) return 'c';
         if (lives == 2) return 'e';
         if (lives == 3) return 'a';

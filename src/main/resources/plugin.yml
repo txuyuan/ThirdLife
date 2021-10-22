@@ -1,6 +1,6 @@
 main: plugin.ThirdLife.Main
 name: ThirdLife
-version: 1.2.0
+version: 1.2.1
 author: Xuyuan
 softdepend: [Essentials]
 api-version: 1.17
