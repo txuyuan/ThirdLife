@@ -2,6 +2,8 @@ package plugin.ThirdLife.managers;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import plugin.ThirdLife.Main;
@@ -9,18 +11,24 @@ import plugin.ThirdLife.data.Data;
 
 public class LifeUpdate {
 
+    private static FileConfiguration data = Data.getLivesData();
+
+    public static void load(){
+        data = Data.getLivesData();
+    }
+
+
+
     public static void loadPlayer(Player player) {
-        FileConfiguration data = Data.getLivesData();
         if (player.hasPermission("thirdlife.bypass")) {
             player.setDisplayName(player.getName());
             return;
         }
-        Main.logTest(player.getName() + " no permission");
         String uuid = player.getUniqueId().toString();
         if (!data.getKeys(false).contains(uuid)) {
-            data.set(uuid, 3);
-            Data.saveLivesData(data, player);
-            updateColour(player, 3);
+            data.set(uuid, 7);
+            Data.saveLivesData(data, (CommandSender)player);
+            updateColour(player, 7);
         } else {
             int lives = data.getInt(uuid);
             Main.logTest("lives=" + lives);
@@ -29,15 +37,20 @@ public class LifeUpdate {
     }
 
 
-    public static void addLife(Player player, boolean isAdd) {
-        if (player.hasPermission("thirdlife.bypass"))
-            return;
-        FileConfiguration data = Data.getLivesData();
+    public static String addLife(OfflinePlayer player, boolean isAdd) {
+        if(player instanceof Player && ((Player) player).hasPermission("thirdlife.bypass")) return "§c(Error)§f Target player has bypass node";
         String uuid = player.getUniqueId().toString();
 
         int lives = data.getInt(uuid);
-        if (isAdd && lives > 2) return;
-        if (!isAdd && lives < 0) return;
+        if (isAdd && lives >= 7){
+            Data.saveLivesData(data, player);
+            return "§b(Status)§f " + player.getName() + " already has 3 or more lives";
+        }
+        if (!isAdd && lives <= -1){
+            data.set(uuid, -1);
+            Data.saveLivesData(data, player);
+            return "§b(Status)§f " + player.getName() + " is already dead";
+        }
 
 
         int newLives = lives + (isAdd ? 1 : -1);
@@ -46,7 +59,8 @@ public class LifeUpdate {
 
         data.set(uuid, newLives);
         Data.saveLivesData(data, Bukkit.getConsoleSender());
-        updateColour(player, newLives);
+        if(player instanceof Player) updateColour((Player)player, newLives);
+        return "§b(Status)§f They now have " + lives + " lives";
     }
 
 
@@ -60,9 +74,9 @@ public class LifeUpdate {
             lives = -1;
             saveLives(player, -1);
         }
-        if (lives > 3) {
-            lives = 3;
-            saveLives(player, 3);
+        if (lives > 7) {
+            lives = 7;
+            saveLives(player, 7);
         }
 
         player.setGameMode(lives == -1 ? GameMode.SPECTATOR : GameMode.SURVIVAL);
@@ -91,12 +105,16 @@ public class LifeUpdate {
 
 
     private static char getColour(int lives) {
-        if (lives == -1) return '7';
-        if (lives == 0) return '4';
-        if (lives == 1) return 'c';
-        if (lives == 2) return 'e';
-        if (lives == 3) return 'a';
-        return '0';
+        return switch(lives){
+            case -1 -> '7';
+            case 0 -> '4';
+            case 1 -> 'c';
+            case 2 -> 'e';
+            case 3 -> 'a';
+            case 4,5,6,7 -> 'd';
+            default -> 'f';
+        };
+
     }
 
     private static void saveLives(Player player, int lives) {
@@ -104,6 +122,7 @@ public class LifeUpdate {
         fileC.set(player.getUniqueId().toString(), lives);
         Data.saveLivesData(fileC, Bukkit.getConsoleSender());
     }
+
 
 
 }

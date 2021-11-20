@@ -1,6 +1,7 @@
 package plugin.ThirdLife.data;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -18,13 +19,23 @@ public class Data {
     }
 
     public static void saveLivesData(FileConfiguration data, CommandSender sender) {
+        String error = saveConfig(data);
+        if(error!=null) sender.sendMessage(error);
+    }
+    public static void saveLivesData(FileConfiguration data, OfflinePlayer player){
+        String error = saveConfig(data);
+        if(error!=null) Main.logInfo(error);
+    }
+
+    private static String saveConfig(FileConfiguration data){
         File dataFile = new File(Bukkit.getPluginManager().getPlugin("ThirdLife").getDataFolder(), "lives.yml");
         try {
             data.save(dataFile);
         } catch (IOException i) {
             Main.logDiskError(i);
-            sender.sendMessage("§c(Error)§f Error writing to disk");
+            return "§c(Error)§f Error writing to disk";
         }
+        return null;
     }
 
 

@@ -1,6 +1,7 @@
 package plugin.ThirdLife.managers;
 
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -49,14 +50,14 @@ public class GhoulManager {
     }
 
 
-    public static void setHasBeenGhoul(Player player, boolean isGhoul) {
+    public static void setHasBeenGhoul(OfflinePlayer player, boolean isGhoul) {
         FileConfiguration fileC = getGhoulData();
         fileC.set(player.getUniqueId().toString(), isGhoul);
         saveGhoulData(fileC);
         Main.logTest(player + " ghoul " + isGhoul);
     }
 
-    public static boolean getHasBeenGhoul(Player player) {
+    public static boolean getHasBeenGhoul(OfflinePlayer player) {
         FileConfiguration fileC = getGhoulData();
 
         String uuid = player.getUniqueId().toString();
