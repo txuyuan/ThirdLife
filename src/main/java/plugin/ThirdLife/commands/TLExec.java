@@ -27,7 +27,7 @@ public class TLExec implements CommandExecutor {
 
 
     public static String reset(CommandSender sender) {
-        config.getKeys(false).forEach(id -> config.set(id, 3));
+        config.getKeys(false).forEach(id -> config.set(id, 7));
         Data.saveLivesData(config, sender);
         Bukkit.getOnlinePlayers().forEach(player -> {
             if(!sender.equals(player)) player.sendMessage("§b(Status)§f All lives have been reset");
@@ -58,8 +58,6 @@ public class TLExec implements CommandExecutor {
         return LifeUpdate.addLife(target, isAdd);
     }
 
-
-
     private static String addPlayer(CommandSender sender, Player player, boolean isAdd) {
         String uuid = player.getUniqueId().toString();
         if (player.hasPermission("thirdlife.bypass"))
@@ -69,6 +67,32 @@ public class TLExec implements CommandExecutor {
     }
 
 
+    private static String get(CommandSender sender, String[] args){
+        if (args.length < 2)
+            return "§c(Erorr)§f Player name required";
+
+        OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+        if (target == null || !target.hasPlayedBefore())
+            return "§c(Error)§f " + args[1] + " has not joined the server before";
+
+        int lives = LifeUpdate.getLives(target);
+
+        String msg = "§b(Status)§f " + target.getName();
+        return switch(lives){
+            case -1 -> msg + " is dead";
+            case 0 -> msg + " is a ghoul";
+            default -> msg + " has " + lives + " " +  (lives!=1 ? "lives" : "life");
+        };
+    }
+
+    private static String newSession(CommandSender sender){
+
+        for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
+            if(LifeUpdate.getLives(player) >= 4)
+                LifeUpdate.addLife(player, false);
+        }
+        return GhoulManager.newSession(sender);
+    }
 
 
 
@@ -84,6 +108,7 @@ public class TLExec implements CommandExecutor {
         }
 
         sender.sendMessage( switch(args[0]){
+            case "get" -> get(sender, args);
             case "add" -> add(sender, args, true);
             case "remove" -> add(sender, args, false);
             case "reset" -> reset(sender);

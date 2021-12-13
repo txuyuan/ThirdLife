@@ -3,6 +3,7 @@ package plugin.ThirdLife.managers;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -37,6 +38,10 @@ public class LifeUpdate {
     }
 
 
+    public static int getLives(OfflinePlayer player){
+        return data.getInt(player.getUniqueId().toString());
+    }
+
     public static String addLife(OfflinePlayer player, boolean isAdd) {
         if(player instanceof Player && ((Player) player).hasPermission("thirdlife.bypass")) return "§c(Error)§f Target player has bypass node";
         String uuid = player.getUniqueId().toString();
@@ -44,7 +49,7 @@ public class LifeUpdate {
         int lives = data.getInt(uuid);
         if (isAdd && lives >= 7){
             Data.saveLivesData(data, player);
-            return "§b(Status)§f " + player.getName() + " already has 3 or more lives";
+            return "§b(Status)§f " + player.getName() + " already has 7 or more lives";
         }
         if (!isAdd && lives <= -1){
             data.set(uuid, -1);
@@ -81,7 +86,6 @@ public class LifeUpdate {
 
         player.setGameMode(lives == -1 ? GameMode.SPECTATOR : GameMode.SURVIVAL);
         player.setDisplayName("§" + getColour(lives) + player.getName());
-        updateNick(player, lives);
 
         if (lives == 0) {
             setHealth(player, false);
@@ -91,16 +95,9 @@ public class LifeUpdate {
         Main.logTest(player.getDisplayName());
     }
 
-    private static void updateNick(Player player, int lives) {
-        String playerName = player.getName();
-        String colouredName = "&" + getColour(lives) + playerName;
-        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "nick " + playerName + " " + colouredName);
-    }
-
 
     private static void setHealth(Player player, boolean isFull) {
-        String command = "attribute " + player.getName() + " minecraft:generic.max_health base set " + (isFull ? "20" : "10");
-        Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), command);
+        player.getAttribute(Attribute.GENERIC_MAX_HEALTH).setBaseValue(isFull ? 20 : 10);
     }
 
 
@@ -111,7 +108,7 @@ public class LifeUpdate {
             case 1 -> 'c';
             case 2 -> 'e';
             case 3 -> 'a';
-            case 4,5,6,7 -> 'd';
+            case 4,5,6,7 -> '9';
             default -> 'f';
         };
 
