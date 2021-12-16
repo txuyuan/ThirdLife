@@ -4,11 +4,13 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import plugin.ThirdLife.commands.GiveLifeComplete;
+import plugin.ThirdLife.commands.GiveLifeExec;
 import plugin.ThirdLife.commands.TLComplete;
 import plugin.ThirdLife.commands.TLExec;
 import plugin.ThirdLife.listeners.GhoulDamageListener;
-import plugin.ThirdLife.listeners.OnPlayerDeath;
-import plugin.ThirdLife.listeners.OnPlayerJoin;
+import plugin.ThirdLife.listeners.PlayerDeathListener;
+import plugin.ThirdLife.listeners.PlayerJoinListener;
 import plugin.ThirdLife.managers.LifeUpdate;
 
 import java.io.IOException;
@@ -36,11 +38,14 @@ public class Main extends JavaPlugin {
     }
 
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(new OnPlayerDeath(), this);
-        getServer().getPluginManager().registerEvents(new OnPlayerJoin(), this);
+        getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(), this);
         getServer().getPluginManager().registerEvents(new GhoulDamageListener(), this);
         getCommand("thirdlife").setExecutor(new TLExec());
         getCommand("thirdlife").setTabCompleter(new TLComplete());
+
+        getCommand("givelife").setExecutor(new GiveLifeExec());
+        getCommand("givelife").setTabCompleter(new GiveLifeComplete());
 
         Bukkit.getOnlinePlayers().forEach(player -> LifeUpdate.loadPlayer(player));
 
@@ -48,8 +53,8 @@ public class Main extends JavaPlugin {
     }
 
     public void onDisable() {
-        HandlerList.unregisterAll(new OnPlayerDeath());
-        HandlerList.unregisterAll(new OnPlayerJoin());
+        HandlerList.unregisterAll(new PlayerDeathListener());
+        HandlerList.unregisterAll(new PlayerJoinListener());
         logInfo("§b(Status)§f Plugin enabled");
     }
 

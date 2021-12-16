@@ -6,6 +6,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import plugin.ThirdLife.Main;
 import plugin.ThirdLife.data.Data;
@@ -18,22 +19,28 @@ import java.util.stream.Collectors;
 
 public class GhoulManager {
 
-    public static String newSession(CommandSender sender) {
+    public static void newSession(CommandSender sender) {
         FileConfiguration fileC = Data.getLivesData();
-        List<String> ghouls = fileC.getKeys(false).stream().filter(id -> fileC.getInt(id) == 0).collect(Collectors.toList());
+        List<String> ghouls = fileC.getKeys(false).stream().filter(id -> fileC.getInt(id) == 0).toList();
         ghouls.forEach(id -> fileC.set(id, -1));
         Data.saveLivesData(fileC, sender);
 
-        List<String> onlinePlayerIds = Bukkit.getOnlinePlayers().stream().map(player -> player.getUniqueId().toString()).collect(Collectors.toList());
-        List<UUID> ghoulIds = onlinePlayerIds.stream().filter(id -> ghouls.contains(id)).map(id -> UUID.fromString(id)).collect(Collectors.toList());
-        ghoulIds.forEach(id -> LifeUpdate.updateColour(Bukkit.getPlayer(id), -1));
-
-        return "§b(Status)§f New session started";
+        List<String> onlinePlayerIds = Bukkit.getOnlinePlayers().stream().map(player -> player.getUniqueId().toString()).toList();
+        List<UUID> ghoulIds = onlinePlayerIds.stream().filter(id -> ghouls.contains(id)).map(id -> UUID.fromString(id)).toList();
+        ghoulIds.forEach(id -> {
+            LifeUpdate.updateColour(Bukkit.getPlayer(id), -1);
+            OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(id);
+            if(offlinePlayer!=null && offlinePlayer.isOnline()){
+                Player player = (Player)offlinePlayer;
+                player.setHealth(0);
+            }
+        });
     }
 
-    public static void checkGhoulKill(PlayerDeathEvent event) {
-        if (event.getEntity().getKiller() == null) return;
-        Player player = event.getEntity();
+    public static void checkGhoulKill(EntityDeathEvent event) {
+        if (!(event.getEntity() instanceof Player) || event.getEntity().getKiller() == null) return;
+
+        Player player = (Player)event.getEntity();
         Player killer = event.getEntity().getKiller();
         String killerUuid = killer.getUniqueId().toString();
 

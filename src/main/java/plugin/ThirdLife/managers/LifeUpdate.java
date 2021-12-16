@@ -12,7 +12,7 @@ import plugin.ThirdLife.data.Data;
 
 public class LifeUpdate {
 
-    private static FileConfiguration data = Data.getLivesData();
+    public static FileConfiguration data = Data.getLivesData();
 
     public static void load(){
         data = Data.getLivesData();
@@ -21,10 +21,8 @@ public class LifeUpdate {
 
 
     public static void loadPlayer(Player player) {
-        if (player.hasPermission("thirdlife.bypass")) {
-            player.setDisplayName(player.getName());
+        if (player.hasPermission("thirdlife.bypass"))
             return;
-        }
         String uuid = player.getUniqueId().toString();
         if (!data.getKeys(false).contains(uuid)) {
             data.set(uuid, 7);
@@ -42,6 +40,9 @@ public class LifeUpdate {
         return data.getInt(player.getUniqueId().toString());
     }
 
+    public static String removeLife(OfflinePlayer player){
+        return addLife(player, false);
+    }
     public static String addLife(OfflinePlayer player, boolean isAdd) {
         if(player instanceof Player && ((Player) player).hasPermission("thirdlife.bypass")) return "§c(Error)§f Target player has bypass node";
         String uuid = player.getUniqueId().toString();
@@ -85,7 +86,7 @@ public class LifeUpdate {
         }
 
         player.setGameMode(lives == -1 ? GameMode.SPECTATOR : GameMode.SURVIVAL);
-        player.setDisplayName("§" + getColour(lives) + player.getName());
+        player.setDisplayName("§" + getColour(lives) + player.getName() + "§f");
 
         if (lives == 0) {
             setHealth(player, false);

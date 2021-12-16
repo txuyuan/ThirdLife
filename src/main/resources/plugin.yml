@@ -1,6 +1,6 @@
 main: plugin.ThirdLife.Main
 name: ThirdLife
-version: 1.2.1
+version: 1.2.2
 author: Xuyuan
 softdepend: [Essentials]
 api-version: 1.17
@@ -8,6 +8,8 @@ commands:
   thirdlife:
     description: Admin command to control
     aliases: tl
+  givelife:
+    description: Give a life to another player
 permissions:
   thirdlife.admin:
     description: Permission to administrate ThirdLife system

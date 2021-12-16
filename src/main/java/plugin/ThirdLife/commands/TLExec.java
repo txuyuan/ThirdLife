@@ -9,10 +9,10 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import plugin.ThirdLife.Main;
 import plugin.ThirdLife.data.Data;
+import plugin.ThirdLife.managers.BlueManager;
 import plugin.ThirdLife.managers.GhoulManager;
 import plugin.ThirdLife.managers.LifeUpdate;
 
-import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,8 +27,10 @@ public class TLExec implements CommandExecutor {
 
 
     public static String reset(CommandSender sender) {
+        config = LifeUpdate.data;
         config.getKeys(false).forEach(id -> config.set(id, 7));
         Data.saveLivesData(config, sender);
+        LifeUpdate.load();
         Bukkit.getOnlinePlayers().forEach(player -> {
             if(!sender.equals(player)) player.sendMessage("§b(Status)§f All lives have been reset");
             LifeUpdate.updateColour(player, 7);
@@ -68,14 +70,20 @@ public class TLExec implements CommandExecutor {
 
 
     private static String get(CommandSender sender, String[] args){
-        if (args.length < 2)
-            return "§c(Erorr)§f Player name required";
+        OfflinePlayer target = null;
+        if (args.length < 2) {
+            if(sender instanceof Player) target = (Player)sender;
+            else return "§c(Erorr)§f Player name required";
+        }
+        else{
+            target = Bukkit.getOfflinePlayer(args[1]);
+            if (target == null || !target.hasPlayedBefore())
+                return "§c(Error)§f " + args[1] + " has not joined the server before";
+        }
 
-        OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
-        if (target == null || !target.hasPlayedBefore())
-            return "§c(Error)§f " + args[1] + " has not joined the server before";
 
         int lives = LifeUpdate.getLives(target);
+        Main.logInfo("Lives: " + lives);
 
         String msg = "§b(Status)§f " + target.getName();
         return switch(lives){
@@ -86,12 +94,22 @@ public class TLExec implements CommandExecutor {
     }
 
     private static String newSession(CommandSender sender){
+        BlueManager.INSTANCE.newSession();
+        GhoulManager.newSession(sender);
+        return "§b(Status)§f New session started";
+    }
 
-        for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
-            if(LifeUpdate.getLives(player) >= 4)
-                LifeUpdate.addLife(player, false);
-        }
-        return GhoulManager.newSession(sender);
+    private static String nick(CommandSender sender, String[] args){
+        if(!(sender instanceof Player))
+            return "§c(Error)§f You must be a player to give yourself a nick";
+        Player player = (Player)sender;
+
+        if(args.length < 2)
+            return "§c(Error)§f Nickname required";
+        String name = args[1].replace("&", "§");
+
+        player.setDisplayName(name);
+        return "§b(Status)§f Nick set: " + name;
     }
 
 
@@ -112,10 +130,22 @@ public class TLExec implements CommandExecutor {
             case "add" -> add(sender, args, true);
             case "remove" -> add(sender, args, false);
             case "reset" -> reset(sender);
-            case "newsession" -> GhoulManager.newSession(sender);
-            default -> "§c(Error)§f Unrecognised argument " + args[0];
+            case "newsession" -> newSession(sender);
+            case "nick" -> nick(sender, args);
+            default -> "§c(Error)§f Unrecognised argument " + args[0] +
+                    "\n" + helpMsg();
         });
         return true;
+    }
+
+    public static String helpMsg(){
+        String msg = "§e(Help)§f §b§lThirdLife v" + Bukkit.getPluginManager().getPlugin("ThirdLife").getDescription().getVersion() +
+                "\n> §eget <target>§f" +
+                "\n> §eadd <target>§f" +
+                "\n> §eremove <target>§f" +
+                "\n> §ereset" +
+                "\n> §enewsession";
+        return msg;
     }
 
 }

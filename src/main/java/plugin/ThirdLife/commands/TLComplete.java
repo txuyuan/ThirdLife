@@ -15,7 +15,7 @@ public class TLComplete implements TabCompleter {
 
     public List<String> onTabComplete(final CommandSender s, final Command c, final String al, final String[] a) {
         if ((c.getName().equals("thirdlife") || c.getName().equalsIgnoreCase("tl")) && a.length <= 1 && s instanceof Player) {
-            List<String> defList = Arrays.asList("reset", "remove", "add", "get", "newsession");
+            List<String> defList = Arrays.asList("add", "remove", "get", "reset", "newsession", "nick");
             List<String> rList = new ArrayList<>();
             if (!s.hasPermission("thirdlife.admin")) {
                 rList.add("§cYou do not have permission to do this");
@@ -23,7 +23,6 @@ public class TLComplete implements TabCompleter {
             }
 
             rList = defList.stream().filter(str -> str.indexOf(a[0]) == 0).collect(Collectors.toList());
-            Collections.sort(rList, String.CASE_INSENSITIVE_ORDER);
             return rList;
         }
         return null;
