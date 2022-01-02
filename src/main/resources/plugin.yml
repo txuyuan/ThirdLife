@@ -1,19 +1,18 @@
-main: plugin.ThirdLife.Main
+main: plugin.thirdlife.Main
 name: ThirdLife
-version: 1.2.2
-author: Xuyuan
-softdepend: [Essentials]
-api-version: 1.17
+version: 1.4.0
+author: HMSValorous
+description: Plugin based on the YT series ThirdLife/LastLife
+
 commands:
   thirdlife:
-    description: Admin command to control
+    description: General command interface for ThirdLife
     aliases: tl
-  givelife:
-    description: Give a life to another player
+
 permissions:
   thirdlife.admin:
-    description: Permission to administrate ThirdLife system
+    description: ThirdLife operator
     default: op
-  thirdlife.bypass:
-    description: Bypass life system
-    default: false
+  thirdlife.use:
+    description: Utilise ThirdLife system
+    default: true
