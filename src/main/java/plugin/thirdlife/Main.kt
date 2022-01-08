@@ -43,12 +43,14 @@ class Main : JavaPlugin(){
 fun logger(): Logger{
     return Main.getInstance().logger
 }
+@Suppress("unused")
 fun Logger.debug(mesage: String){
     var isDebug = false
     try{
-        val isDebug = ConfigFile().config.getBoolean("debug")
+        isDebug = ConfigFile().config.getBoolean("debug")
     }catch(exception: Exception){
         ConfigFile().set("debug", false)
+        isDebug = false
     }
     if(isDebug)
         info(mesage)

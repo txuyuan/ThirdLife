@@ -1,8 +1,6 @@
 package plugin.thirdlife.commands.exec
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.Style
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -129,8 +127,8 @@ class TLExec : CommandExecutor {
 
     private fun nick(sender: CommandSender, args: Array<out String>): Component{
         checkAdminPermission(sender)
-        var target: LifePlayer
-        var nick: String
+        val target: LifePlayer
+        val nick: String
         if(args.size < 3){
             if(sender !is Player) throw IllegalArgumentException("Target player required")
             target = LifePlayer(sender)
@@ -153,12 +151,12 @@ class TLExec : CommandExecutor {
 
     fun helpMsg(): Component{
         val msg = """
-            §e(Help)§f §b§lThirdLife v${Bukkit.getPluginManager().getPlugin("ThirdLife")!!.description.version}
+            §e(Help)§f §b§lThirdLife v${Bukkit.getPluginManager().getPlugin("ThirdLife")!!.description.version}§f
             > §eget <target>§f
             > §eadd <target>§f
             > §eremove <target>§f
-            > §ereset
-            > §enewsession
+            > §ereset§f
+            > §enewsession§f
             """.trimIndent()
         return LegacyComponentSerializer.legacySection().deserialize(msg)
     }

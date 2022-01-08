@@ -6,14 +6,14 @@
 
     <groupId>plugin</groupId>
     <artifactId>ThirdLife</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1</version>
     <packaging>jar</packaging>
 
     <name>ThirdLife</name>
-
     <description>Plugin based on the YT series ThirdLife/LastLife</description>
+
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.version>1.6.10</kotlin.version>
     </properties>

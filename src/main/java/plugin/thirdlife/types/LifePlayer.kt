@@ -30,30 +30,22 @@ class LifePlayer{
             if(!(allowedUse() ?: false))
                 throw PermissionException()
 
-            var newLives = value
-            if(newLives > 7)
+            if(lives > 7)
                 throw LifeException("You cannot have more than 7 lives")
-            if(newLives < -1)
+            if(lives < -1)
                 throw LifeException("You cannot have less than 0 lives")
 
-            if(newLives==0 && GhoulManager.getGhoul(this))
-                newLives = -1
-
-            LivesFile().set(uuid.toString(), newLives)
-            logger().info("Player $name now has $newLives lives")
-            save()
+            LivesFile().set(uuid.toString(), value)
+            logger().info("Player $name now has $value lives")
             update()
         }
         get(){
-            val tmpLives =
-                if( !LivesFile().getKeys(false).contains(uuid.toString())  ||
-                    LivesFile().config.getInt(uuid.toString())<-1 || LivesFile().config.getInt(uuid.toString())>7 ){
+            return if( !LivesFile().getKeys(false).contains(uuid.toString())  ||
+                        LivesFile().config.getInt(uuid.toString())<-1 || LivesFile().config.getInt(uuid.toString())>7 ){
                     LivesFile().set(uuid.toString(), 7)
                     7
                 }else
                     LivesFile().config.getInt(uuid.toString())
-
-            return tmpLives
         }
     var hasGhoul: Boolean
         set(ghoul){
@@ -74,10 +66,10 @@ class LifePlayer{
     private fun addRemoveLife(isAdd: Boolean){
         if(isAdd && lives == 7)
             throw LifeException("You cannot have more than 7 lives")
-        if(!isAdd && lives == 0)
+        if(!isAdd && lives == -1)
             throw LifeException("You cannot have less than 0 lives")
 
-        if(!hasGhoul && !isAdd && lives==1) // First time losing red life
+        if(hasGhoul && !isAdd && lives==1) // First time losing red life
             lives -= 2
         else
             lives += (if(isAdd) 1 else -1)
@@ -204,17 +196,11 @@ class LifePlayer{
 fun CommandSender.sendStatus(message: String){
     sendMessage(Component.text(message)/*.color(NamedTextColor.WHITE)*/)
 }
-fun CommandSender.sendInfo(message: String){
-    sendMessage(Component.text(message)/*.color(NamedTextColor.WHITE)*/)
-}
 fun CommandSender.sendError(message: String){
     sendMessage(Component.text(message).color(NamedTextColor.RED))
 }
 
 fun CommandSender.sendStatus(message: Component){
-    sendMessage(message/*.color(NamedTextColor.WHITE)*/)
-}
-fun CommandSender.sendInfo(message: Component){
     sendMessage(message/*.color(NamedTextColor.WHITE)*/)
 }
 fun CommandSender.sendError(message: Component){
