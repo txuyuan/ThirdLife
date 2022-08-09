@@ -1,64 +1,96 @@
 package plugin.thirdlife.types
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextDecoration
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
 import org.bukkit.EntityEffect
 import org.bukkit.GameMode
 import org.bukkit.OfflinePlayer
 import org.bukkit.attribute.Attribute
-import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
 import plugin.thirdlife.Main
-import plugin.thirdlife.handlers.GhoulManager
 import plugin.thirdlife.handlers.LifeManager
 import plugin.thirdlife.handlers.NickManager
+import plugin.thirdlife.handlers.sendStatus
 import plugin.thirdlife.logger
 import java.util.*
-import java.util.logging.Logger
 
 class LifePlayer{
-    var player: OfflinePlayer
-    var name: String
+    val offlinePlayer: OfflinePlayer
+        get() {
+            return Bukkit.getOfflinePlayer(uuid)
+        }
+    val isOnline: Boolean
+        get() {
+            return onlinePlayer != null
+        }
+    val onlinePlayer: Player?
+        get() {
+            return LifeManager.getOnlinePlayer(offlinePlayer)
+        }
+    val name: String
+        get() {
+            return PlayersFile().getName(uuid)!!
+        }
     var uuid: UUID
+    var nick:Component?
+        set(nick){
+            NickManager.setNick(this, nick)
+        }
+        get(){
+            return NickManager.getNick(this)
+        }
     var lives: Int
+        //Forced to go through addLife()/removeLife()
         set(value){
-            if(!(allowedUse() ?: false))
-                throw PermissionException()
-
-            if(lives > 7)
-                throw LifeException("You cannot have more than 7 lives")
+            if(lives > 3)
+                throw LifeException("You cannot have more than 3 lives")
             if(lives < -1)
                 throw LifeException("You cannot have less than 0 lives")
 
-            LivesFile().set(uuid.toString(), value)
+            PlayersFile().setLives(uuid, value)
             logger().info("Player $name now has $value lives")
             update()
         }
         get(){
-            return if( !LivesFile().getKeys(false).contains(uuid.toString())  ||
-                        LivesFile().config.getInt(uuid.toString())<-1 || LivesFile().config.getInt(uuid.toString())>7 ){
-                    LivesFile().set(uuid.toString(), 7)
-                    7
-                }else
-                    LivesFile().config.getInt(uuid.toString())
+            val lives = PlayersFile().getLives(uuid)
+            if( lives < -1 || lives > 7 ){
+                PlayersFile().setLives(uuid, 7)
+                return 7
+            } else
+                return lives
         }
-    var hasGhoul: Boolean
+    var isGhoul: Boolean
         set(ghoul){
-            GhoulManager.setGhoul(this, ghoul)
-        } get(){
-            return GhoulManager.getGhoul(this)
+            PlayersFile().setIsGhoul(uuid, ghoul)
+            isOldGhoul = true
+            setHealth(!isGhoul)
         }
-    var nick:Component?
-        set(nick){
-            NickManager.setNick(this, nick)
-            player.player?.displayName(nick)
-        } get(){
-            return NickManager.getNick(this)
+        get(){
+            return PlayersFile().getIsGhoul(uuid)
+        }
+    var isOldGhoul: Boolean
+        set(ghoul){
+            PlayersFile().setIsOldGhoul(uuid, ghoul)
+        }
+        get(){
+            return PlayersFile().getIsOldGhoul(uuid)
+        }
+    var isShadow: Boolean
+        set(ghoul){
+            PlayersFile().setIsShadow(uuid, ghoul)
+            isOldShadow = true
+        }
+        get(){
+            return PlayersFile().getIsOldShadow(uuid)
+        }
+    var isOldShadow: Boolean
+        set(ghoul){
+            PlayersFile().setIsOldShadow(uuid, ghoul)
+        }
+        get(){
+            return PlayersFile().getIsOldShadow(uuid)
         }
 
 
@@ -69,7 +101,7 @@ class LifePlayer{
         if(!isAdd && lives == -1)
             throw LifeException("You cannot have less than 0 lives")
 
-        if(hasGhoul && !isAdd && lives==1) // First time losing red life
+        if(isGhoul && !isAdd && lives==1) // First time losing red life
             lives -= 2
         else
             lives += (if(isAdd) 1 else -1)
@@ -87,43 +119,32 @@ class LifePlayer{
         giveNotifs(this, target)
     }
     private fun giveNotifs(player: LifePlayer, target: LifePlayer){
-        val onlinePlayer = player.player.player!!
+        val onlinePlayer = player.offlinePlayer.player!!
         onlinePlayer.playEffect(EntityEffect.TOTEM_RESURRECT)
         onlinePlayer.sendTitlePart(TitlePart.TITLE, Component.text("You gave a life to"))
         onlinePlayer.sendTitlePart(TitlePart.SUBTITLE, target.nick!!)
 
-        if(target.player.isOnline){
-            val onlineTarget = target.player.player!!
+        if(target.offlinePlayer.isOnline){
+            val onlineTarget = target.offlinePlayer.player!!
             onlineTarget.sendTitlePart(TitlePart.TITLE, Component.text("You have been given a life by"))
             onlineTarget.sendTitlePart(TitlePart.SUBTITLE, player.nick!!)
         }
     }
 
+    fun setHealth(isFull: Boolean){
+        val onlinePlayer = LifeManager.getOnlinePlayer(offlinePlayer) ?: return
+        onlinePlayer.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.baseValue =
+            if(isFull) 20.0 else 10.0
+    }
 
-    constructor(name: String){
-        val tmpUuid = LifeManager.getPlayerUUID(name)
-        if(tmpUuid==null) throw CacheException("Playername $name not found in cache")
-        this.name = name
-        this.uuid = tmpUuid
-        this.player = Bukkit.getOfflinePlayer(uuid)
-    }
-    constructor(uuid: UUID){
-        val tmpName = LifeManager.getPlayerName(uuid)
-        if(tmpName==null) throw CacheException("Uuid $uuid not found in cache")
-        this.name = tmpName
-        this.uuid = uuid
-        this.player = Bukkit.getOfflinePlayer(uuid)
-    }
-    constructor(player: Player){
-        LifeManager.savePlayer(player)
-        this.name = player.name
-        this.uuid = player.uniqueId
-        this.player = player
-    }
 
 
     // -------- PERMISSIONS --------
     //** Null if player not online */
+    fun checkAllowedUse() {
+        if(!(allowedUse() ?: false))
+            throw PermissionException()
+    }
     fun allowedUse(): Boolean?{
         return allowed("thirdlife.use")
     }
@@ -132,17 +153,36 @@ class LifePlayer{
         return allowed("thirdlife.admin")
     }
     fun allowed(permission: String): Boolean?{
-        val onlinePlayer =
-            if(player is Player) player as Player
-            else LifeManager.getOnlinePlayer(player) ?: return null
+        val onlinePlayer = LifeManager.getOnlinePlayer(offlinePlayer) ?: throw Exception("Requested player is not online")
         return onlinePlayer.hasPermission(permission)
     }
 
 
-    fun update(){
-        val onlinePlayer = LifeManager.getOnlinePlayer(player) ?: return
-        if(!allowedUse()!!) return //canUse() notnull ^
 
+
+    constructor(uuid: UUID){
+        this.uuid = uuid
+        checkAllowedUse()
+        save()
+    }
+    constructor(name: String){
+        val newUUID = LifeManager.playerNameToUUID(name)
+        if(newUUID==null) throw CacheException("Player $name not found")
+        this.uuid = newUUID
+        checkAllowedUse()
+        save()
+    }
+    constructor(player: Player){
+        this.uuid = player.uniqueId
+        checkAllowedUse()
+        save()
+    }
+
+    fun update(){
+        val onlinePlayer = LifeManager.getOnlinePlayer(offlinePlayer) ?: return
+        if(!allowedUse()!!) return
+
+        // Check if dead - simulate death without moving player
         if(lives==-1){
             if(!onlinePlayer.inventory.isEmpty){
                 onlinePlayer.inventory.forEach {
@@ -154,14 +194,15 @@ class LifePlayer{
         }else
             onlinePlayer.gameMode = GameMode.SURVIVAL
 
+        // Re-update nick
         onlinePlayer.displayName(nick)
 
+        // Check if ghoul
         if(lives==0) {
-            setHealth(false)
-            GhoulManager.setGhoul(this, true)
-        }else
-            setHealth(true)
+            this.isGhoul = true
+        }
 
+        // Send notifications
         object : BukkitRunnable(){ override fun run() {
             onlinePlayer.sendStatus(
                 when(lives){
@@ -174,60 +215,20 @@ class LifePlayer{
         save()
     }
 
-    fun setHealth(isFull: Boolean){
-        val onlinePlayer = LifeManager.getOnlinePlayer(player) ?: return
-        onlinePlayer.getAttribute(Attribute.GENERIC_MAX_HEALTH)!!.baseValue =
-            if(isFull) 20.0 else 10.0
+
+
+    fun save() {
+        //TODO: save all details
+
+    }
+
+    companion object {
+        fun init() {
+            Bukkit.getOnlinePlayers().forEach {
+                LifePlayer(it)
+            }
+        }
     }
 
 
-
-
-
-    fun save(){
-        LifeManager.savePlayer(name, uuid)
-        LivesFile().set(uuid.toString(), lives)
-    }
-
-}
-
-
-
-fun CommandSender.sendStatus(message: String){
-    sendMessage(Component.text(message)/*.color(NamedTextColor.WHITE)*/)
-}
-fun CommandSender.sendError(message: String){
-    sendMessage(Component.text(message).color(NamedTextColor.RED))
-}
-
-fun CommandSender.sendStatus(message: Component){
-    sendMessage(message/*.color(NamedTextColor.WHITE)*/)
-}
-fun CommandSender.sendError(message: Component){
-    sendMessage(message.color(NamedTextColor.RED))
-}
-
-fun Logger.info(msg: Component){
-    val serMsg = LegacyComponentSerializer.legacySection().serialize(msg)
-    info(serMsg)
-}
-
-fun componentWhite(): Component{
-    return LegacyComponentSerializer.legacyAmpersand().deserialize("§r")
-}
-
-fun getOnlinePlayerNames(): MutableList<String>{
-    return Bukkit.getOnlinePlayers().map { it.name }.toMutableList()
-}
-
-
-
-fun Component.reset(): Component{
-    decoration(TextDecoration.ITALIC, false)
-    decoration(TextDecoration.BOLD, false)
-    decoration(TextDecoration.OBFUSCATED, false)
-    decoration(TextDecoration.STRIKETHROUGH, false)
-    decoration(TextDecoration.UNDERLINED, false)
-    color(NamedTextColor.WHITE)
-    return this
 }

@@ -6,7 +6,6 @@ import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import plugin.thirdlife.commands.completers.TLComplete
 import plugin.thirdlife.commands.exec.TLExec
-import plugin.thirdlife.handlers.LifeManager
 import plugin.thirdlife.listeners.ThirdLifeListeners
 import plugin.thirdlife.types.ConfigFile
 import plugin.thirdlife.types.LifePlayer
@@ -15,7 +14,7 @@ import java.util.logging.Logger
 class Main : JavaPlugin(){
 
     override fun onEnable(){
-        LifeManager.init()
+        LifePlayer.init()
 
         server.pluginManager.registerEvents(ThirdLifeListeners(),this)
 

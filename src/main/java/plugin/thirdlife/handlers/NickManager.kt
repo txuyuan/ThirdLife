@@ -3,13 +3,12 @@ package plugin.thirdlife.handlers
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import plugin.thirdlife.types.LifePlayer
-import plugin.thirdlife.types.NicksFile
-import plugin.thirdlife.types.componentWhite
+import plugin.thirdlife.types.PlayersFile
 
 object NickManager {
 
     fun getNick(player: LifePlayer): Component{
-        val rawNick = NicksFile().config.getString(player.uuid.toString())
+        val rawNick = PlayersFile().getNick(player.uuid)
             ?: return Component.text(player.name)
                 .color(LifeManager.getLifeColours(player.lives))
                 .append(componentWhite())
@@ -19,9 +18,8 @@ object NickManager {
     fun setNick(player: LifePlayer, nick: Component?){
         val rawNick =
             if(nick!=null) LegacyComponentSerializer.legacySection().serialize(nick)
-            else null
-        NicksFile().set(player.uuid.toString(), rawNick)
+            else ""
+        PlayersFile().setNick(player.uuid, rawNick)
+        player.offlinePlayer.player?.displayName(nick)
     }
-
-
 }

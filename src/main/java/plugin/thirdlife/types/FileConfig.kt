@@ -6,13 +6,7 @@ import plugin.thirdlife.Main
 import plugin.thirdlife.logger
 import java.io.File
 import java.io.IOException
-
-class LivesFile : FileConfig("lives.yml")
-class CacheFile: FileConfig("playerCache.yml")
-class GhoulsFile: FileConfig("ghouls.yml")
 class ConfigFile: FileConfig("config.yml")
-class NicksFile: FileConfig("nicks.yml")
-
 
 abstract class FileConfig(name: String){
     var config: FileConfiguration = getConfig(name)

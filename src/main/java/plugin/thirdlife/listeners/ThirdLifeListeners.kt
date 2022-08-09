@@ -10,7 +10,6 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.scheduler.BukkitRunnable
 import plugin.thirdlife.Main
-import plugin.thirdlife.handlers.BlueManager
 import plugin.thirdlife.handlers.GhoulManager
 import plugin.thirdlife.types.LifePlayer
 import plugin.thirdlife.types.sendError
@@ -19,7 +18,6 @@ class ThirdLifeListeners : Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     fun onDeath(event: PlayerDeathEvent){
-        BlueManager.checkDeath(event)
         object : BukkitRunnable() {
             override fun run() {
                 LifePlayer(event.player).removeLife()
@@ -44,7 +42,7 @@ class ThirdLifeListeners : Listener {
         if (!(player.lives==0 && damager.lives==0)) return //Not both ghouls
 
         event.isCancelled = true
-        (damager.player as Player).sendError(Component.text("You cannot damage another ghoul"))
+        (damager.offlinePlayer as Player).sendError(Component.text("You cannot damage another ghoul"))
     }
 
 

@@ -7,10 +7,10 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
-import plugin.thirdlife.handlers.BlueManager
-import plugin.thirdlife.handlers.GhoulManager
-import plugin.thirdlife.handlers.LifeManager
-import plugin.thirdlife.types.*
+import plugin.thirdlife.handlers.*
+import plugin.thirdlife.types.LifeException
+import plugin.thirdlife.types.LifePlayer
+import plugin.thirdlife.types.PermissionException
 
 class TLExec : CommandExecutor {
 
@@ -91,7 +91,7 @@ class TLExec : CommandExecutor {
 
     private fun reset(sender: CommandSender): Component{
         checkAdminPermission(sender)
-        LifeManager.reset()
+        LifeManager.resetAll()
         return Component.text("All lives reset")
     }
 
@@ -120,7 +120,6 @@ class TLExec : CommandExecutor {
 
     private fun newSession(sender: CommandSender): Component{
         checkAdminPermission(sender)
-        BlueManager.newSession()
         GhoulManager.newSession()
         return Component.text("New session started")
     }
