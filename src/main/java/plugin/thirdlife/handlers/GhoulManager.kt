@@ -5,7 +5,7 @@ import plugin.thirdlife.types.LifePlayer
 
 object GhoulManager {
 
-    fun newSession(){
+    fun endSession(){
         // Kill all remaining ghouls
         val ghouls = LifeManager.getAllPlayers()
             .filter { it.isGhoul }

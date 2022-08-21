@@ -4,8 +4,8 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import plugin.thirdlife.getOnlinePlayerNames
 import plugin.thirdlife.types.LifePlayer
-import plugin.thirdlife.types.getOnlinePlayerNames
 
 class TLComplete : TabCompleter {
 

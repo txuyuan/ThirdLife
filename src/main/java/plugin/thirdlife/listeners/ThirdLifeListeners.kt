@@ -11,8 +11,8 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.scheduler.BukkitRunnable
 import plugin.thirdlife.Main
 import plugin.thirdlife.handlers.GhoulManager
+import plugin.thirdlife.handlers.sendError
 import plugin.thirdlife.types.LifePlayer
-import plugin.thirdlife.types.sendError
 
 class ThirdLifeListeners : Listener {
 

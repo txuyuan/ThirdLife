@@ -1,12 +1,18 @@
 package plugin.thirdlife.commands.exec
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import net.kyori.adventure.title.Title
+import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
+import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scheduler.BukkitTask
+import plugin.thirdlife.Main
 import plugin.thirdlife.handlers.*
 import plugin.thirdlife.types.LifeException
 import plugin.thirdlife.types.LifePlayer
@@ -32,7 +38,8 @@ class TLExec : CommandExecutor {
             "remove" -> addRemoveLives(sender, args, false)
             "give" -> giveLife(sender, args)
             "reset" -> reset(sender)
-            "newsession" -> newSession(sender)
+            "endSession" -> endSession(sender)
+            "newSession" -> newSession(sender)
             "nick" -> nick(sender, args)
             else -> Component.text("Unrecognised argument").append(Component.newline())
                 .append(helpMsg())
@@ -118,11 +125,52 @@ class TLExec : CommandExecutor {
         return Component.text("You have given a life to ").append(target.nick!!)
     }
 
-    private fun newSession(sender: CommandSender): Component{
+    private fun endSession(sender: CommandSender): Component{
         checkAdminPermission(sender)
-        GhoulManager.newSession()
-        return Component.text("New session started")
+
+        // Countdown to end of session
+        val countdownMin = 10
+        for (i in countdownMin downTo 0) {
+            object :  BukkitRunnable() {
+                override fun run() {
+                    if (countdownMin==0) {
+                        // Broadcast start
+                        val color = NamedTextColor.RED
+                        val message = Component.text("Session has ended!").color(color)
+                        val title = Component.text("SESSION END").color(color)
+                        Bukkit.broadcast(message)
+                        for (player in Bukkit.getOnlinePlayers()) {
+                            player.sendTitlePart(TitlePart.TITLE, title)
+                        }
+                        // End session
+                        GhoulManager.endSession()
+                        ShadowManager.endSession()
+                    } else {
+                        // Broadcast countdown
+                        val color = if (countdownMin > 5) NamedTextColor.GREEN else NamedTextColor.GOLD
+                        val message = Component.text("Session ending in $countdownMin minutes").color(color)
+                        val title = Component.text("${countdownMin}min").color(color)
+                        Bukkit.broadcast(message)
+                        for (player in Bukkit.getOnlinePlayers()) {
+                            player.sendTitlePart(TitlePart.TITLE, title)
+                        }
+                    }
+                }
+            }.runTaskLater(Main.getInstance(), ((10-i) * 1000) as Long)
+        }
+
+        return Component.text("Session ending in $countdownMin minutes")
     }
+
+    private fun newSession(sender: CommandSender): Component {
+        // Broadcast start
+        val color = NamedTextColor.GREEN
+        val message = Component.text("").color(color)
+        val title = Component.text("SESSION START").color(color)
+
+        return Component.text("Session started")
+    }
+
 
     private fun nick(sender: CommandSender, args: Array<out String>): Component{
         checkAdminPermission(sender)
@@ -155,7 +203,7 @@ class TLExec : CommandExecutor {
             > §eadd <target>§f
             > §eremove <target>§f
             > §ereset§f
-            > §enewsession§f
+            > §eendSession§f
             """.trimIndent()
         return LegacyComponentSerializer.legacySection().deserialize(msg)
     }

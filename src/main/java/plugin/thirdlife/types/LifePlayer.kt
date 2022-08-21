@@ -163,19 +163,16 @@ class LifePlayer{
     constructor(uuid: UUID){
         this.uuid = uuid
         checkAllowedUse()
-        save()
     }
     constructor(name: String){
         val newUUID = LifeManager.playerNameToUUID(name)
         if(newUUID==null) throw CacheException("Player $name not found")
         this.uuid = newUUID
         checkAllowedUse()
-        save()
     }
     constructor(player: Player){
         this.uuid = player.uniqueId
         checkAllowedUse()
-        save()
     }
 
     fun update(){
@@ -212,15 +209,8 @@ class LifePlayer{
                 }
             )
         }}.runTaskLater(Main.getInstance(), 1)
-        save()
     }
 
-
-
-    fun save() {
-        //TODO: save all details
-
-    }
 
     companion object {
         fun init() {

@@ -5,8 +5,11 @@ import plugin.thirdlife.types.LifePlayer
 
 object ShadowManager {
 
-    fun newSession() {
-        //TODO: Random assign shadow to player
+    fun endSession() {
+        // Kill remaining shadow
+        val shadow = getCurrentShadow()
+        shadow.lives = 0
+        shadow.isShadow = false
     }
 
     fun getCurrentShadow(): LifePlayer {
