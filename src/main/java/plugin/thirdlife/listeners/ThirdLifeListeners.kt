@@ -1,6 +1,5 @@
 package plugin.thirdlife.listeners
 
-import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -11,7 +10,7 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.scheduler.BukkitRunnable
 import plugin.thirdlife.Main
 import plugin.thirdlife.handlers.GhoulManager
-import plugin.thirdlife.handlers.sendError
+import plugin.thirdlife.handlers.ShadowManager
 import plugin.thirdlife.types.LifePlayer
 
 class ThirdLifeListeners : Listener {
@@ -36,13 +35,8 @@ class ThirdLifeListeners : Listener {
     fun onDamage(event: EntityDamageByEntityEvent){
         if(!(event.entity is Player) || !(event.damager is Player))
             return
-        val player = LifePlayer(event.entity as Player)
-        val damager = LifePlayer(event.damager as Player)
-
-        if (!(player.lives==0 && damager.lives==0)) return //Not both ghouls
-
-        event.isCancelled = true
-        (damager.offlinePlayer as Player).sendError(Component.text("You cannot damage another ghoul"))
+        GhoulManager.checkGhoulPunch(event)
+        ShadowManager.checkShadowPunch(event)
     }
 
 

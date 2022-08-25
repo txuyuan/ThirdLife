@@ -1,5 +1,7 @@
 package plugin.thirdlife.handlers
 
+import org.bukkit.entity.Player
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import plugin.thirdlife.logger
 import plugin.thirdlife.types.LifePlayer
 
@@ -19,7 +21,7 @@ object ShadowManager {
             val errorMsg = "Error. Multiple shadows are saved"
             //Log for debug & report
             val shadowNames = currentShadows.map { it.name }
-            logger().severe(errorMsg + ": " + currentShadows.joinToString(", ")) //Log detected shadows' names
+            logger().severe(errorMsg + ": " + shadowNames.joinToString(", ")) //Log detected shadows' names
             //Error message for user
             throw Exception(errorMsg)
         }
@@ -29,6 +31,16 @@ object ShadowManager {
     fun getOldShadows(): List<LifePlayer> {
         return LifeManager.getAllPlayers()
             .filter { it.isOldGhoul }
+    }
+
+    fun checkShadowPunch(event: EntityDamageByEntityEvent) {
+        val player = LifePlayer(event.entity as Player)
+        val damager = LifePlayer(event.damager as Player)
+      
+        if (damager.isShadow) {
+          damager.isShadow = false
+          player.isShadow = true
+        }
     }
 
 }

@@ -2,6 +2,7 @@ package plugin.thirdlife.handlers
 
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
+import org.bukkit.Bukkit
 import org.bukkit.OfflinePlayer
 import org.bukkit.entity.Player
 import plugin.thirdlife.types.LifePlayer
@@ -12,9 +13,17 @@ object LifeManager {
 
     fun resetAll(){
         getAllPlayers().forEach {
-            it.lives = 3
+            it.muteUpdates = true
+
+            it.lives = getMaxLives()
+            it.isGhoul = false
+            it.isOldGhoul = false
+            it.isShadow = false
+            it.isOldShadow = false
+
+            it.muteUpdates = false
+            it.update()
         }
-        GhoulManager.reset()
     }
 
     fun playerNameToUUID(name: String): UUID?{
@@ -32,10 +41,14 @@ object LifeManager {
     }
 
     fun getOnlinePlayer(offlinePlayer: OfflinePlayer): Player?{
-        if (!offlinePlayer.isOnline)
-            return offlinePlayer as Player
-        else
-            return null
+        return getOnlinePlayer(offlinePlayer.uniqueId)
+    }
+    fun getOnlinePlayer(uuid: UUID): Player? {
+        for (player in Bukkit.getOnlinePlayers()) {
+            if (player.uniqueId.equals(uuid))
+              return player
+        }
+        return null;
     }
 
     fun getLifeColours(lives: Int): TextColor{
@@ -47,5 +60,8 @@ object LifeManager {
             3 -> NamedTextColor.GREEN
             else -> NamedTextColor.WHITE
         }
+    }
+    fun getMaxLives(): Int {
+        return 7
     }
 }

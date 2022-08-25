@@ -1,7 +1,6 @@
 package plugin.thirdlife
 
 import org.bukkit.Bukkit
-import org.bukkit.entity.Player
 import org.bukkit.event.HandlerList
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin

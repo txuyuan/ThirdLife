@@ -1,5 +1,8 @@
 package plugin.thirdlife.handlers
 
+import net.kyori.adventure.text.Component
+import org.bukkit.entity.Player
+import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import plugin.thirdlife.types.LifePlayer
 
@@ -21,11 +24,14 @@ object GhoulManager {
 
         killer.addLife()
     }
+    fun checkGhoulPunch(event: EntityDamageByEntityEvent) {
+        val player = LifePlayer(event.entity as Player)
+        val damager = LifePlayer(event.damager as Player)
 
-    fun reset(){
-        LifeManager.getAllPlayers().forEach {
-            it.isGhoul = false
-        }
+        if (!(player.lives==0 && damager.lives==0)) return //Not both ghouls
+
+        event.isCancelled = true
+        (damager.offlinePlayer as Player).sendError(Component.text("You cannot damage another ghoul"))
     }
 
 }

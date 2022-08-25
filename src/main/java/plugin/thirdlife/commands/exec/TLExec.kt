@@ -3,7 +3,6 @@ package plugin.thirdlife.commands.exec
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import net.kyori.adventure.title.Title
 import net.kyori.adventure.title.TitlePart
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
@@ -11,7 +10,6 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
-import org.bukkit.scheduler.BukkitTask
 import plugin.thirdlife.Main
 import plugin.thirdlife.handlers.*
 import plugin.thirdlife.types.LifeException
@@ -175,7 +173,7 @@ class TLExec : CommandExecutor {
     private fun nick(sender: CommandSender, args: Array<out String>): Component{
         checkAdminPermission(sender)
         val target: LifePlayer
-        val nick: String
+        var nick: String
         if(args.size < 3){
             if(sender !is Player) throw IllegalArgumentException("Target player required")
             target = LifePlayer(sender)
@@ -184,6 +182,11 @@ class TLExec : CommandExecutor {
             target = LifePlayer(args.get(1))
             nick = args.get(2)
         }
+
+        // For reset
+        if (nick.length == 0)
+            nick = target.name
+
         val nickFormatted = LegacyComponentSerializer.legacyAmpersand().deserialize(nick)
         target.nick = nickFormatted
         return Component.text("${target.name} nick set ").append(nickFormatted)

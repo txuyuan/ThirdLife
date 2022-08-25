@@ -21,13 +21,9 @@ class LifePlayer{
         get() {
             return Bukkit.getOfflinePlayer(uuid)
         }
-    val isOnline: Boolean
-        get() {
-            return onlinePlayer != null
-        }
     val onlinePlayer: Player?
         get() {
-            return LifeManager.getOnlinePlayer(offlinePlayer)
+            return LifeManager.getOnlinePlayer(uuid)
         }
     val name: String
         get() {
@@ -44,8 +40,9 @@ class LifePlayer{
     var lives: Int
         //Forced to go through addLife()/removeLife()
         set(value){
-            if(lives > 3)
-                throw LifeException("You cannot have more than 3 lives")
+            val maxLives = LifeManager.getMaxLives()
+            if(lives > maxLives)
+                throw LifeException("You cannot have more than $maxLives lives")
             if(lives < -1)
                 throw LifeException("You cannot have less than 0 lives")
 
@@ -63,9 +60,10 @@ class LifePlayer{
         }
     var isGhoul: Boolean
         set(ghoul){
+            setHealth(!ghoul)
             PlayersFile().setIsGhoul(uuid, ghoul)
             isOldGhoul = true
-            setHealth(!isGhoul)
+            update()
         }
         get(){
             return PlayersFile().getIsGhoul(uuid)
@@ -73,6 +71,7 @@ class LifePlayer{
     var isOldGhoul: Boolean
         set(ghoul){
             PlayersFile().setIsOldGhoul(uuid, ghoul)
+            update()
         }
         get(){
             return PlayersFile().getIsOldGhoul(uuid)
@@ -81,6 +80,7 @@ class LifePlayer{
         set(ghoul){
             PlayersFile().setIsShadow(uuid, ghoul)
             isOldShadow = true
+            update()
         }
         get(){
             return PlayersFile().getIsOldShadow(uuid)
@@ -88,16 +88,19 @@ class LifePlayer{
     var isOldShadow: Boolean
         set(ghoul){
             PlayersFile().setIsOldShadow(uuid, ghoul)
+            update()
         }
         get(){
             return PlayersFile().getIsOldShadow(uuid)
         }
+    var muteUpdates = false
 
 
 
     private fun addRemoveLife(isAdd: Boolean){
-        if(isAdd && lives == 7)
-            throw LifeException("You cannot have more than 7 lives")
+        val maxLives = LifeManager.getMaxLives()
+        if(isAdd && lives == maxLives)
+            throw LifeException("You cannot have more than $maxLives lives")
         if(!isAdd && lives == -1)
             throw LifeException("You cannot have less than 0 lives")
 
@@ -112,8 +115,9 @@ class LifePlayer{
     fun giveLife(target: LifePlayer){
         if(lives <=1) //Cannot sacrifice to dead/ghoul
             throw LifeException("You cannot give away your last life")
-        if(target.lives==7)
-            throw LifeException("Target already has 7 lives")
+        val maxLives = LifeManager.getMaxLives()
+        if(target.lives == maxLives)
+            throw LifeException("Target already has $maxLives lives")
         this.removeLife()
         target.addLife()
         giveNotifs(this, target)
@@ -163,19 +167,44 @@ class LifePlayer{
     constructor(uuid: UUID){
         this.uuid = uuid
         checkAllowedUse()
+        init()
     }
     constructor(name: String){
         val newUUID = LifeManager.playerNameToUUID(name)
         if(newUUID==null) throw CacheException("Player $name not found")
         this.uuid = newUUID
         checkAllowedUse()
+        init()
     }
     constructor(player: Player){
         this.uuid = player.uniqueId
         checkAllowedUse()
+        init()
     }
 
-    fun update(){
+    private fun init() {
+        // Initialise default values
+        if (PlayersFile().getName(uuid)==null) {
+            PlayersFile().setName(uuid, onlinePlayer!!.name)
+        }
+        // Not initialising nick
+        if (lives==null) {
+            lives = LifeManager.getMaxLives()
+        }
+        if (isGhoul==null)
+            isGhoul = false
+        if (isOldGhoul==null)
+            isOldGhoul = false
+        if (isShadow==null)
+            isShadow = false
+        if (isOldShadow==null)
+            isOldShadow = false
+    }
+
+    fun update() {
+        update(true)
+    }
+    fun update(sendMessage: Boolean){
         val onlinePlayer = LifeManager.getOnlinePlayer(offlinePlayer) ?: return
         if(!allowedUse()!!) return
 
@@ -199,16 +228,21 @@ class LifePlayer{
             this.isGhoul = true
         }
 
-        // Send notifications
+        if (sendMessage)
+            msgUpdate()
+    }
+    fun msgUpdate() {
+        if (muteUpdates)
+            return
         object : BukkitRunnable(){ override fun run() {
-            onlinePlayer.sendStatus(
+            onlinePlayer?.sendStatus(
                 when(lives){
                     -1 -> "You are dead"
                     0 -> "You are a ghoul"
                     else -> "You have $lives lives"
                 }
             )
-        }}.runTaskLater(Main.getInstance(), 1)
+        }}.runTaskLater(Main.getInstance(), 2)
     }
 
 
