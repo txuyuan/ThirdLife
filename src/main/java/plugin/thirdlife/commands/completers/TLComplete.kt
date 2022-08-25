@@ -22,7 +22,7 @@ class TLComplete : TabCompleter {
             }
 
         return when(args.size){
-            1 -> mutableListOf("add", "remove", "get", "give", "reset", "newsession", "nick")
+            1 -> mutableListOf("add", "remove", "get", "give", "reset", "endSession", "newSession", "nick")
             2 -> when(args.get(0)){
                 "add","remove","nick" -> getOnlinePlayerNames()
                 "get" -> {

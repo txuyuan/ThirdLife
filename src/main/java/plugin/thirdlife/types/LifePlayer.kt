@@ -14,6 +14,7 @@ import plugin.thirdlife.handlers.LifeManager
 import plugin.thirdlife.handlers.NickManager
 import plugin.thirdlife.handlers.sendStatus
 import plugin.thirdlife.logger
+import plugin.thirdlife.scoreboards.ScoreboardManager
 import java.util.*
 
 class LifePlayer{
@@ -38,7 +39,6 @@ class LifePlayer{
             return NickManager.getNick(this)
         }
     var lives: Int
-        //Forced to go through addLife()/removeLife()
         set(value){
             val maxLives = LifeManager.getMaxLives()
             if(lives > maxLives)
@@ -58,36 +58,29 @@ class LifePlayer{
             } else
                 return lives
         }
-    var isGhoul: Boolean
-        set(ghoul){
-            setHealth(!ghoul)
-            PlayersFile().setIsGhoul(uuid, ghoul)
-            isOldGhoul = true
-            update()
-        }
+    val isGhoul: Boolean
         get(){
-            return PlayersFile().getIsGhoul(uuid)
+            return (lives==0)
         }
     var isOldGhoul: Boolean
-        set(ghoul){
-            PlayersFile().setIsOldGhoul(uuid, ghoul)
+        set(oldGhoul){
+            PlayersFile().setIsOldGhoul(uuid, oldGhoul)
             update()
         }
         get(){
             return PlayersFile().getIsOldGhoul(uuid)
         }
     var isShadow: Boolean
-        set(ghoul){
-            PlayersFile().setIsShadow(uuid, ghoul)
-            isOldShadow = true
+        set(shadow){
+            PlayersFile().setIsShadow(uuid, shadow)
             update()
         }
         get(){
             return PlayersFile().getIsOldShadow(uuid)
         }
     var isOldShadow: Boolean
-        set(ghoul){
-            PlayersFile().setIsOldShadow(uuid, ghoul)
+        set(oldShadow){
+            PlayersFile().setIsOldShadow(uuid, oldShadow)
             update()
         }
         get(){
@@ -104,7 +97,7 @@ class LifePlayer{
         if(!isAdd && lives == -1)
             throw LifeException("You cannot have less than 0 lives")
 
-        if(isGhoul && !isAdd && lives==1) // First time losing red life
+        if(isGhoul && !isAdd && lives==1) // Lose red life when ghoul
             lives -= 2
         else
             lives += (if(isAdd) 1 else -1)
@@ -146,7 +139,14 @@ class LifePlayer{
     // -------- PERMISSIONS --------
     //** Null if player not online */
     fun checkAllowedUse() {
-        if(!(allowedUse() ?: false))
+        var isAllowedUse: Boolean? = false
+        try {
+            isAllowedUse = allowedUse()
+        }catch(e: Exception) {
+            return
+        }
+
+        if(isAllowedUse == false)
             throw PermissionException()
     }
     fun allowedUse(): Boolean?{
@@ -191,8 +191,6 @@ class LifePlayer{
         if (lives==null) {
             lives = LifeManager.getMaxLives()
         }
-        if (isGhoul==null)
-            isGhoul = false
         if (isOldGhoul==null)
             isOldGhoul = false
         if (isShadow==null)
@@ -224,9 +222,12 @@ class LifePlayer{
         onlinePlayer.displayName(nick)
 
         // Check if ghoul
-        if(lives==0) {
-            this.isGhoul = true
+        setHealth(!this.isGhoul)
+        if (this.isGhoul && !this.isOldGhoul) {
+            this.isOldGhoul
         }
+
+        ScoreboardManager.updatePlayer(this)
 
         if (sendMessage)
             msgUpdate()
@@ -235,13 +236,17 @@ class LifePlayer{
         if (muteUpdates)
             return
         object : BukkitRunnable(){ override fun run() {
-            onlinePlayer?.sendStatus(
-                when(lives){
-                    -1 -> "You are dead"
-                    0 -> "You are a ghoul"
-                    else -> "You have $lives lives"
-                }
-            )
+            var message = ""
+            val livesStat = when(lives){
+                -1 -> "You are dead"
+                0 -> "You are a ghoul"
+                else -> "You have $lives lives"
+            }
+            message += livesStat
+            val shadowStat = if(isShadow) "and you are the Shadow" else ""
+            message += shadowStat
+
+            onlinePlayer?.sendStatus(message)
         }}.runTaskLater(Main.getInstance(), 2)
     }
 

@@ -8,14 +8,21 @@ import plugin.thirdlife.types.LifePlayer
 
 object GhoulManager {
 
+    fun endSession(ghouls: List<LifePlayer>){
+        // Specify list of ghouls to kill
+        ghouls.forEach{
+            it.removeLife()
+        }
+    }
     fun endSession(){
         // Kill all remaining ghouls
         val ghouls = LifeManager.getAllPlayers()
             .filter { it.isGhoul }
         ghouls.forEach{
-            it.lives = 0
+            it.removeLife()
         }
     }
+
 
     fun checkGhoulKiller(event: PlayerDeathEvent){
         val player = LifePlayer(event.player)
@@ -32,6 +39,12 @@ object GhoulManager {
 
         event.isCancelled = true
         (damager.offlinePlayer as Player).sendError(Component.text("You cannot damage another ghoul"))
+    }
+
+    fun getGhouls(): List<LifePlayer> {
+        val ghouls = LifeManager.getAllPlayers()
+            .filter { it.isGhoul }
+        return ghouls
     }
 
 }

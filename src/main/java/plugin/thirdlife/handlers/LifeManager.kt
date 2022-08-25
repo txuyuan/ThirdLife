@@ -12,11 +12,11 @@ import java.util.*
 object LifeManager {
 
     fun resetAll(){
-        getAllPlayers().forEach {
+        getAllPlayers()
+            .forEach {
             it.muteUpdates = true
 
-            it.lives = getMaxLives()
-            it.isGhoul = false
+            it.lives = LifeManager.getMaxLives()
             it.isOldGhoul = false
             it.isShadow = false
             it.isOldShadow = false
@@ -62,6 +62,6 @@ object LifeManager {
         }
     }
     fun getMaxLives(): Int {
-        return 7
+        return 3
     }
 }

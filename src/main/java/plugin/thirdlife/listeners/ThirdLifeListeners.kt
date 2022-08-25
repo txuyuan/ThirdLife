@@ -11,6 +11,7 @@ import org.bukkit.scheduler.BukkitRunnable
 import plugin.thirdlife.Main
 import plugin.thirdlife.handlers.GhoulManager
 import plugin.thirdlife.handlers.ShadowManager
+import plugin.thirdlife.scoreboards.ScoreboardManager
 import plugin.thirdlife.types.LifePlayer
 
 class ThirdLifeListeners : Listener {
@@ -29,6 +30,7 @@ class ThirdLifeListeners : Listener {
     @EventHandler
     fun onJoin(event: PlayerJoinEvent){
         LifePlayer(event.player).update()
+        ScoreboardManager.updatePlayerBoards()
     }
 
     @EventHandler
@@ -38,6 +40,5 @@ class ThirdLifeListeners : Listener {
         GhoulManager.checkGhoulPunch(event)
         ShadowManager.checkShadowPunch(event)
     }
-
 
 }

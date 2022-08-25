@@ -9,9 +9,11 @@ object NickManager {
 
     fun getNick(player: LifePlayer): Component{
         val rawNick = PlayersFile().getNick(player.uuid)
-            ?: return Component.text(player.name)
+        if (rawNick==null) {
+            return Component.text(player.name)
                 .color(LifeManager.getLifeColours(player.lives))
                 .append(componentWhite())
+        }
         return LegacyComponentSerializer.legacySection().deserialize(rawNick)
     }
 
