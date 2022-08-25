@@ -1,6 +1,7 @@
 main: plugin.thirdlife.Main
 name: ThirdLife
 version: 1.5.0
+api-version: 1.19
 author: HMSValorous
 description: Plugin based on the YT series ThirdLife/LastLife
 

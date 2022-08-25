@@ -4,9 +4,17 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
+import plugin.thirdlife.types.LifePlayer
+import java.util.DoubleSummaryStatistics
 import java.util.logging.Logger
+
+fun killOfflinePlayer(player: LifePlayer) {
+    if (player.onlinePlayer == null) //Offline
+        player.removeLife()
+    else
+        player.onlinePlayer!!.health = 0.0
+}
 
 fun CommandSender.sendStatus(message: String){
     sendStatus(Component.text(message))
@@ -19,22 +27,26 @@ fun CommandSender.sendHelp(message: String) {
 }
 
 fun CommandSender.sendStatus(message: Component){
-    sendMessage(
-        Component.text("(Status) ").color(NamedTextColor.AQUA)
-        .append(message.color(NamedTextColor.WHITE))
-    )
+    sendMessage(formatStatus(message))
 }
 fun CommandSender.sendError(message: Component){
-    sendMessage(
-        Component.text("(Error) ").color(NamedTextColor.RED)
-        .append(message.color(NamedTextColor.WHITE))
-    )
+    sendMessage(formatError(message))
 }
 fun CommandSender.sendHelp(message: Component){
-    sendMessage(
-        Component.text("(Help) ").color(NamedTextColor.YELLOW)
+    sendMessage(formatHelp(message))
+}
+
+fun formatStatus(message: Component): Component {
+    return Component.text("(Status) ").color(NamedTextColor.AQUA)
         .append(message.color(NamedTextColor.WHITE))
-    )
+}
+fun formatError(message: Component): Component {
+    return Component.text("(Error) ").color(NamedTextColor.RED)
+        .append(message.color(NamedTextColor.WHITE))
+}
+fun formatHelp(message: Component): Component {
+    return Component.text("(Help) ").color(NamedTextColor.YELLOW)
+        .append(message.color(NamedTextColor.WHITE))
 }
 
 

@@ -5,6 +5,7 @@ import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.PlayerDeathEvent
 import plugin.thirdlife.types.LifePlayer
+import java.util.DoubleSummaryStatistics
 
 object GhoulManager {
 
@@ -19,7 +20,7 @@ object GhoulManager {
         val ghouls = LifeManager.getAllPlayers()
             .filter { it.isGhoul }
         ghouls.forEach{
-            it.removeLife()
+            killOfflinePlayer(it)
         }
     }
 

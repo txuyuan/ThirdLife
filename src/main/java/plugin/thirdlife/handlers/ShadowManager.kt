@@ -3,22 +3,28 @@ package plugin.thirdlife.handlers
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import plugin.thirdlife.logger
+import plugin.thirdlife.scoreboards.ScoreboardManager
 import plugin.thirdlife.types.LifePlayer
-import java.util.Random
+import plugin.thirdlife.types.PlayersFile
 
 object ShadowManager {
 
     fun endSession() {
         // Kill remaining shadow
         val shadow = getShadow()
-        shadow.lives = 0
+
+        killOfflinePlayer(shadow)
         shadow.isShadow = false
     }
 
     fun newSession() {
+        LifeManager.getAllPlayers().forEach {
+            PlayersFile().setIsShadow(it.uuid, false)
+        }
         // Assign shadow to random player
         val newShadow = LifeManager.getAllPlayers().random()
         newShadow.isShadow = true
+        ScoreboardManager.updatePlayerBoards() //Force board update
 
         // Notify admins of shadow
         val admins = LifeManager.getAllPlayers().filter { it.allowedAdmin()==true }

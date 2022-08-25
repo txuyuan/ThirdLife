@@ -2,9 +2,8 @@ package plugin.thirdlife.commands.exec
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
-import net.kyori.adventure.title.TitlePart
-import net.md_5.bungee.api.ChatMessageType
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -42,8 +41,14 @@ class TLExec : CommandExecutor {
             "endsession" -> endSession(sender)
             "newsession" -> newSession(sender)
             "nick" -> nick(sender, args)
-            else -> Component.text("Unrecognised argument").append(Component.newline())
-                .append(helpMsg())
+            else -> {
+                object: BukkitRunnable() {
+                    override fun run() {
+                        sender.sendHelp(helpMsg())
+                    }
+                }.runTaskLater(Main.getInstance(), 1)
+                throw IllegalArgumentException("Unrecognised argument ${args[0]}")
+            }
         }
     }
 
@@ -128,6 +133,9 @@ class TLExec : CommandExecutor {
 
     private fun endSession(sender: CommandSender): Component{
         checkAdminPermission(sender)
+        if (isCountdown)
+            return Component.text("Session end countdown is already initiated")
+        isCountdown = true
 
         // People who become ghouls after countdown start stay alive
         val ghouls = GhoulManager.getGhouls()
@@ -137,32 +145,31 @@ class TLExec : CommandExecutor {
         for (i in countdownMin downTo 0) {
             object :  BukkitRunnable() {
                 override fun run() {
-                    if (countdownMin==0) {
+                    if (i==0) {
                         // Broadcast start
                         val color = NamedTextColor.RED
                         val message = Component.text("Session has ended!").color(color)
-                        val title = Component.text("SESSION END").color(color)
+                        val title = Component.text("Session has ended!").color(color).decorate(TextDecoration.BOLD)
                         Bukkit.broadcast(message)
                         for (player in Bukkit.getOnlinePlayers()) {
                             player.sendActionBar(title)
-                            //player.sendTitlePart(TitlePart.TITLE, title)
                         }
                         // End session
                         GhoulManager.endSession(ghouls)
                         ShadowManager.endSession()
+                        isCountdown = false
                     } else {
                         // Broadcast countdown
                         val color = if (countdownMin > 5) NamedTextColor.GREEN else NamedTextColor.GOLD
-                        val message = Component.text("Session ending in $countdownMin minutes").color(color)
-                        val title = Component.text("${countdownMin}min").color(color)
+                        val message = Component.text("Session ending in $i minutes").color(color)
+                        val title = Component.text("Session ending in $i minutes").color(color).decorate(TextDecoration.BOLD)
                         Bukkit.broadcast(message)
                         for (player in Bukkit.getOnlinePlayers()) {
                             player.sendActionBar(title)
-                            //player.sendTitlePart(TitlePart.TITLE, title)
                         }
                     }
                 }
-            }.runTaskLater(Main.getInstance(), ((10-i) * 1000) as Long)
+            }.runTaskLater(Main.getInstance(), (10-i.toLong())*120) //TODO: Replace 120 with 1200, debug
         }
 
         return Component.text("Session ending in $countdownMin minutes")
@@ -211,7 +218,7 @@ class TLExec : CommandExecutor {
 
     fun helpMsg(): Component{
         val msg = """
-            §e(Help)§f §b§lThirdLife v${Bukkit.getPluginManager().getPlugin("ThirdLife")!!.description.version}§f
+            §b§lThirdLife v${Bukkit.getPluginManager().getPlugin("ThirdLife")!!.description.version}§f
             > §eget <target>§f
             > §eadd <target>§f
             > §eremove <target>§f
@@ -226,6 +233,10 @@ class TLExec : CommandExecutor {
             if(!LifePlayer(sender).allowedAdmin()!!)
                 throw PermissionException()
         }
+    }
+
+    companion object {
+        var isCountdown = false
     }
 
 }

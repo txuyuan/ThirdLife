@@ -6,8 +6,8 @@ import org.bukkit.scoreboard.Objective
 import org.bukkit.scoreboard.Score
 import org.bukkit.scoreboard.Scoreboard
 import plugin.thirdlife.handlers.LifeManager
+import plugin.thirdlife.logger
 import plugin.thirdlife.types.LifePlayer
-import java.util.StringJoiner
 
 object ScoreboardManager {
 
@@ -19,9 +19,6 @@ object ScoreboardManager {
         onlinePlayers.forEach {
             it.onlinePlayer?.scoreboard = getPlayerBoard(it)
         }
-    }
-    fun updatePlayer(player: LifePlayer){
-        player.onlinePlayer?.scoreboard = getPlayerBoard(player)
     }
 
     private fun getPlayerBoard(player: LifePlayer): Scoreboard {
@@ -35,11 +32,16 @@ object ScoreboardManager {
 
         lines.add(divider)
 
-        val lives = player.lives
+        val lives = when(player.lives) {
+            -1 -> "Dead"
+            0 -> "Ghoul"
+            else -> "${player.lives}"
+        }
         lines.add("§aLives§f: $lives")
 
-        val isShadow = player.isShadow
-        if (isShadow) {
+
+        if (player.isShadow) {
+            lines.add("§f")
             lines.add("§cYou are the SHADOW§f")
         }
 
@@ -61,7 +63,7 @@ object ScoreboardManager {
 }
 
 fun getScoreboardDivider(): String {
-    return "§7-------------------§f"
+    return "§7---------------------§f"
 }
 fun getGameName(): String {
     return "GOTFB"

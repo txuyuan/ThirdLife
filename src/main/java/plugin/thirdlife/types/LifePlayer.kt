@@ -8,11 +8,8 @@ import org.bukkit.GameMode
 import org.bukkit.OfflinePlayer
 import org.bukkit.attribute.Attribute
 import org.bukkit.entity.Player
-import org.bukkit.scheduler.BukkitRunnable
-import plugin.thirdlife.Main
 import plugin.thirdlife.handlers.LifeManager
 import plugin.thirdlife.handlers.NickManager
-import plugin.thirdlife.handlers.sendStatus
 import plugin.thirdlife.logger
 import plugin.thirdlife.scoreboards.ScoreboardManager
 import java.util.*
@@ -65,7 +62,6 @@ class LifePlayer{
     var isOldGhoul: Boolean
         set(oldGhoul){
             PlayersFile().setIsOldGhoul(uuid, oldGhoul)
-            update()
         }
         get(){
             return PlayersFile().getIsOldGhoul(uuid)
@@ -76,19 +72,15 @@ class LifePlayer{
             update()
         }
         get(){
-            return PlayersFile().getIsOldShadow(uuid)
+            return PlayersFile().getIsShadow(uuid)
         }
     var isOldShadow: Boolean
         set(oldShadow){
             PlayersFile().setIsOldShadow(uuid, oldShadow)
-            update()
         }
         get(){
             return PlayersFile().getIsOldShadow(uuid)
         }
-    var muteUpdates = false
-
-
 
     private fun addRemoveLife(isAdd: Boolean){
         val maxLives = LifeManager.getMaxLives()
@@ -97,7 +89,7 @@ class LifePlayer{
         if(!isAdd && lives == -1)
             throw LifeException("You cannot have less than 0 lives")
 
-        if(isGhoul && !isAdd && lives==1) // Lose red life when ghoul
+        if(isOldGhoul && !isAdd && lives==1) // Lose red life when ghoul
             lives -= 2
         else
             lives += (if(isAdd) 1 else -1)
@@ -139,14 +131,7 @@ class LifePlayer{
     // -------- PERMISSIONS --------
     //** Null if player not online */
     fun checkAllowedUse() {
-        var isAllowedUse: Boolean? = false
-        try {
-            isAllowedUse = allowedUse()
-        }catch(e: Exception) {
-            return
-        }
-
-        if(isAllowedUse == false)
+        if(allowedUse() == false) //Avoid type assertion
             throw PermissionException()
     }
     fun allowedUse(): Boolean?{
@@ -156,8 +141,13 @@ class LifePlayer{
     fun allowedAdmin(): Boolean?{
         return allowed("thirdlife.admin")
     }
-    fun allowed(permission: String): Boolean?{
-        val onlinePlayer = LifeManager.getOnlinePlayer(offlinePlayer) ?: throw Exception("Requested player is not online")
+    fun allowed(permission: String): Boolean{
+        val onlinePlayer = LifeManager.getOnlinePlayer(offlinePlayer)
+        if (onlinePlayer==null) {
+            //logger().severe("Player $name not online for permission check")
+            // Just operate on trust :)
+            return true
+        }
         return onlinePlayer.hasPermission(permission)
     }
 
@@ -223,31 +213,11 @@ class LifePlayer{
 
         // Check if ghoul
         setHealth(!this.isGhoul)
-        if (this.isGhoul && !this.isOldGhoul) {
-            this.isOldGhoul
+        if (this.isGhoul) {
+            PlayersFile().setIsOldGhoul(uuid, true)
         }
 
-        ScoreboardManager.updatePlayer(this)
-
-        if (sendMessage)
-            msgUpdate()
-    }
-    fun msgUpdate() {
-        if (muteUpdates)
-            return
-        object : BukkitRunnable(){ override fun run() {
-            var message = ""
-            val livesStat = when(lives){
-                -1 -> "You are dead"
-                0 -> "You are a ghoul"
-                else -> "You have $lives lives"
-            }
-            message += livesStat
-            val shadowStat = if(isShadow) "and you are the Shadow" else ""
-            message += shadowStat
-
-            onlinePlayer?.sendStatus(message)
-        }}.runTaskLater(Main.getInstance(), 2)
+        ScoreboardManager.updatePlayerBoards()
     }
 
 

@@ -14,14 +14,12 @@ object LifeManager {
     fun resetAll(){
         getAllPlayers()
             .forEach {
-            it.muteUpdates = true
 
             it.lives = LifeManager.getMaxLives()
             it.isOldGhoul = false
             it.isShadow = false
             it.isOldShadow = false
 
-            it.muteUpdates = false
             it.update()
         }
     }
