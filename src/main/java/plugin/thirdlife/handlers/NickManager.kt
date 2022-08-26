@@ -25,6 +25,6 @@ object NickManager {
             if(nick==null) null
             else LegacyComponentSerializer.legacySection().serialize(nick)
         PlayersFile().setNick(player.uuid, rawNick)
-        player.offlinePlayer.player?.displayName(nick)
+        player.offlinePlayer.player?.displayName(getNick(player))
     }
 }

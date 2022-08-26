@@ -191,8 +191,10 @@ class TLExec : CommandExecutor {
         checkAdminPermission(sender)
         val target: LifePlayer
         var nick: String
+        if (args.size < 2)
+            throw Exception("Nick or target player required")
         if(args.size < 3){
-            if(sender !is Player) throw IllegalArgumentException("Target player required")
+            if(sender !is Player) throw Exception("Target player required; you are not a valid target")
             target = LifePlayer(sender)
             nick = args.get(1)
         }else{
@@ -201,13 +203,13 @@ class TLExec : CommandExecutor {
         }
 
         // For reset
-        if (nick.length == 0) {
+        if (nick == "reset") {
             target.nick = null
-            return Component.text("${target.name} nick reset")
+            return Component.text("${target.name}'s nick reset")
         } else {
             val nickFormatted = LegacyComponentSerializer.legacyAmpersand().deserialize(nick)
             target.nick = nickFormatted
-            return Component.text("${target.name} nick set ").append(nickFormatted)
+            return Component.text("${target.name}'s nick set: ").append(nickFormatted)
         }
     }
 
