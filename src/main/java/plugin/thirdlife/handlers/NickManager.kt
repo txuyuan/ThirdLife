@@ -1,6 +1,8 @@
 package plugin.thirdlife.handlers
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.ComponentLike
+import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import plugin.thirdlife.types.LifePlayer
 import plugin.thirdlife.types.PlayersFile
@@ -14,7 +16,7 @@ object NickManager {
                 .color(LifeManager.getLifeColours(player.lives))
                 .append(componentWhite())
         }
-        return LegacyComponentSerializer.legacySection().deserialize(rawNick)
+        return LegacyComponentSerializer.legacySection().deserialize(rawNick).append(Component.text().color(NamedTextColor.WHITE))
     }
 
     fun setNick(player: LifePlayer, nick: Component?){
