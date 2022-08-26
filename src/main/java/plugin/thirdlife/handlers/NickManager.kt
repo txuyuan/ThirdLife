@@ -4,6 +4,7 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
+import org.bukkit.entity.Player
 import plugin.thirdlife.types.LifePlayer
 import plugin.thirdlife.types.PlayersFile
 
@@ -21,8 +22,8 @@ object NickManager {
 
     fun setNick(player: LifePlayer, nick: Component?){
         val rawNick =
-            if(nick!=null) LegacyComponentSerializer.legacySection().serialize(nick)
-            else ""
+            if(nick==null) null
+            else LegacyComponentSerializer.legacySection().serialize(nick)
         PlayersFile().setNick(player.uuid, rawNick)
         player.offlinePlayer.player?.displayName(nick)
     }

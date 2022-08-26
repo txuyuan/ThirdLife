@@ -13,7 +13,7 @@ class PlayersFile: FileConfig("players.yml") {
         return this.config.getString("$uuid.name")
     }
 
-    fun setNick(uuid: UUID, nick: String) {
+    fun setNick(uuid: UUID, nick: String?) {
         this.set("$uuid.nick", nick)
     }
     fun getNick(uuid: UUID): String? {

@@ -201,12 +201,14 @@ class TLExec : CommandExecutor {
         }
 
         // For reset
-        if (nick.length == 0)
-            nick = target.name
-
-        val nickFormatted = LegacyComponentSerializer.legacyAmpersand().deserialize(nick)
-        target.nick = nickFormatted
-        return Component.text("${target.name} nick set ").append(nickFormatted)
+        if (nick.length == 0) {
+            target.nick = null
+            return Component.text("${target.name} nick reset")
+        } else {
+            val nickFormatted = LegacyComponentSerializer.legacyAmpersand().deserialize(nick)
+            target.nick = nickFormatted
+            return Component.text("${target.name} nick set ").append(nickFormatted)
+        }
     }
 
 
