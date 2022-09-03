@@ -93,6 +93,20 @@ class LifePlayer{
             lives -= 2
         else
             lives += (if(isAdd) 1 else -1)
+
+        // Drop items if die
+        if (lives==-1 && onlinePlayer!=null) {
+            val player = onlinePlayer!!
+
+            val loc = player.location.clone()
+            val inv = player.inventory
+            player.inventory.clear()
+            for (item in inv) {
+                if (item!=null) {
+                    loc.world.dropItemNaturally(loc, item.clone())
+                }
+            }
+        }
     }
     fun addLife(){ addRemoveLife(true) }
     fun removeLife(){ addRemoveLife(false) }

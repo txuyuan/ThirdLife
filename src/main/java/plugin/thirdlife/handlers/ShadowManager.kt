@@ -1,5 +1,6 @@
 package plugin.thirdlife.handlers
 
+import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import plugin.thirdlife.logger
@@ -37,7 +38,9 @@ object ShadowManager {
     fun checkShadowPunch(event: EntityDamageByEntityEvent) {
         val player = LifePlayer(event.entity as Player)
         val damager = LifePlayer(event.damager as Player)
-        if (!damager.isShadow)
+        if (!damager.isShadow) // Only continue if damager is shadow
+            return
+        if (player.isOldShadow) // Reject if damagee is old shadow
             return
 
         damager.isShadow = false
@@ -46,6 +49,8 @@ object ShadowManager {
         // Set damager only as old shadow
         getOldShadow().isOldShadow = false
         damager.isOldShadow = true
+
+        damager.onlinePlayer?.sendMessage(formatStatus(Component.text("You have been shadow touched!")))
     }
 
     fun getShadow(): LifePlayer {

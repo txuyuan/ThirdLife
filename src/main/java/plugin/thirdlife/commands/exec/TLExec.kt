@@ -58,7 +58,7 @@ class TLExec : CommandExecutor {
         if(args.size < 2){
             if(sender is Player)
                 target = LifePlayer(sender)
-            else throw LifeException("You must be a player to alter your lives")
+            else throw LifeException("Specify a player to get info for")
         }else{
             checkAdminPermission(sender)
 
@@ -75,15 +75,30 @@ class TLExec : CommandExecutor {
         return getLivesStatus(target)
     }
     private fun getLivesStatus(target: LifePlayer): Component{
-        return target.nick!!.append(
-            Component.text(
-                when(target.lives){
-                    -1 -> " is dead"
-                    0 -> " is a ghoul"
-                    else -> " has ${target.lives} lives"
-                }
-            ).reset()
+        var livesStatus = Component.text("- ")
+            .append(Component.text(
+                when(target.lives) {
+                    -1 -> "dead"
+                    0 -> "ghoul"
+                    else -> "${target.lives} lives"
+            }).color(LifeManager.getLifeColours(target.lives))
         )
+        val shadowStatus = Component.text("- ")
+            .append(Component.text(
+                if (target.isShadow) "shadow"
+                else "not shadow"
+            )).color(
+                if (target.isShadow) NamedTextColor.RED
+                else NamedTextColor.WHITE
+            )
+
+        val msg = Component.text("> ")
+            .append(target.nick!!)
+            .append(componentWhite())
+            .append(livesStatus)
+            .append(shadowStatus)
+
+        return msg
     }
 
     private fun addRemoveLives(sender: CommandSender, args: Array<out String>, isAdd: Boolean): Component{
@@ -133,9 +148,9 @@ class TLExec : CommandExecutor {
 
     private fun endSession(sender: CommandSender): Component{
         checkAdminPermission(sender)
-        if (isCountdown)
-            return Component.text("Session end countdown is already initiated")
-        isCountdown = true
+        if (countdownOngiong)
+            return Component.text("Session end countdown is already ongoing")
+        countdownOngiong = true
 
         // People who become ghouls after countdown start stay alive
         val ghouls = GhoulManager.getGhouls()
@@ -146,6 +161,7 @@ class TLExec : CommandExecutor {
             object :  BukkitRunnable() {
                 override fun run() {
                     if (i==0) {
+                        countdownOngiong = false
                         // Broadcast start
                         val color = NamedTextColor.RED
                         val message = Component.text("Session has ended!").color(color)
@@ -157,7 +173,6 @@ class TLExec : CommandExecutor {
                         // End session
                         GhoulManager.endSession(ghouls)
                         ShadowManager.endSession()
-                        isCountdown = false
                     } else {
                         // Broadcast countdown
                         val color = if (countdownMin > 5) NamedTextColor.GREEN else NamedTextColor.GOLD
@@ -240,7 +255,7 @@ class TLExec : CommandExecutor {
     }
 
     companion object {
-        var isCountdown = false
+        var countdownOngiong = false
     }
 
 }
