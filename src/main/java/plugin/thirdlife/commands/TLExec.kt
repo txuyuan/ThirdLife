@@ -164,6 +164,8 @@ class TLExec : CommandExecutor {
                 countdownTasks.forEach {
                     it.cancel()
                 }
+                val broadcastMsg = Component.text("Session end countdown cancelled").color(NamedTextColor.RED)
+                Bukkit.broadcast(broadcastMsg)
                 return Component.text("Cancelled countdown")
             }
         }
@@ -191,7 +193,7 @@ class TLExec : CommandExecutor {
                             initEndSession(ghouls)
                         } else {
                             // Broadcast countdown
-                            val color = if (countdownMin > 5) NamedTextColor.GREEN else NamedTextColor.GOLD
+                            val color = if (countdownMin > 5) NamedTextColor.RED else NamedTextColor.YELLOW
                             val message = Component.text("Session ending in $i minutes").color(color)
                             val title = Component.text("Session ending in $i minutes").color(color)
                                 .decorate(TextDecoration.BOLD)
