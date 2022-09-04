@@ -1,4 +1,4 @@
-package plugin.thirdlife.commands.completers
+package plugin.thirdlife.commands
 
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -14,7 +14,7 @@ class TLComplete : TabCompleter {
         if(sender is Player && LifePlayer(sender).allowedAdmin()!=true)
             return when(args.size){
                 1 -> mutableListOf("get", "give")
-                2 -> when(args.get(0)){
+                2 -> when(args.get(0).toLowerCase()){
                     "get", "give" -> getOnlinePlayerNames()
                     else -> mutableListOf()
                 }
@@ -23,7 +23,7 @@ class TLComplete : TabCompleter {
 
         return when(args.size){
             1 -> mutableListOf("add", "remove", "get", "give", "reset", "endSession", "newSession", "nick")
-            2 -> when(args.get(0)){
+            2 -> when(args.get(0).toLowerCase()){
                 "add","remove","nick" -> getOnlinePlayerNames()
                 "get" -> {
                     getOnlinePlayerNames()
@@ -31,6 +31,7 @@ class TLComplete : TabCompleter {
                     rList.add("all")
                     rList
                 }
+                "endsession" -> mutableListOf("now", "countdown", "cancel")
                 else -> mutableListOf()
             }
             else -> mutableListOf()

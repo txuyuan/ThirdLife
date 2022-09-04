@@ -14,8 +14,10 @@ object ShadowManager {
         // Kill remaining shadow
         val shadow = getShadow()
 
-        killOfflinePlayer(shadow)
-        shadow.isShadow = false
+        if (shadow!=null){
+            killOfflinePlayer(shadow)
+            shadow.isShadow = false
+        }
     }
 
     fun newSession() {
@@ -47,15 +49,17 @@ object ShadowManager {
         player.isShadow = true
 
         // Set damager only as old shadow
-        getOldShadow().isOldShadow = false
+        getOldShadow()?.isOldShadow = false
         damager.isOldShadow = true
 
         damager.onlinePlayer?.sendMessage(formatStatus(Component.text("You have been shadow touched!")))
     }
 
-    fun getShadow(): LifePlayer {
+    fun getShadow(): LifePlayer? {
         val currentShadows = LifeManager.getAllPlayers()
             .filter { it.isShadow }
+        if (currentShadows.size < 1)
+            return null
         if (currentShadows.size > 1) {
             val errorMsg = "Error. Multiple shadows are saved"
             //Log for debug & report
@@ -67,9 +71,11 @@ object ShadowManager {
         return currentShadows[0]
     }
 
-    fun getOldShadow(): LifePlayer {
+    fun getOldShadow(): LifePlayer? {
         val oldShadows = LifeManager.getAllPlayers()
             .filter { it.isOldShadow }
+        if (oldShadows.size < 0)
+            return null
         if (oldShadows.size > 1) {
             val errorMsg = "Error. Multiple old shadows are saved"
             //Log for debug & report

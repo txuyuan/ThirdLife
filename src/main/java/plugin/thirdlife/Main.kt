@@ -4,8 +4,8 @@ import org.bukkit.Bukkit
 import org.bukkit.event.HandlerList
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
-import plugin.thirdlife.commands.completers.TLComplete
-import plugin.thirdlife.commands.exec.TLExec
+import plugin.thirdlife.commands.TLComplete
+import plugin.thirdlife.commands.TLExec
 import plugin.thirdlife.listeners.ThirdLifeListeners
 import plugin.thirdlife.types.ConfigFile
 import plugin.thirdlife.types.LifePlayer

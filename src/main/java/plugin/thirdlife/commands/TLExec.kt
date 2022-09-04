@@ -1,4 +1,4 @@
-package plugin.thirdlife.commands.exec
+package plugin.thirdlife.commands
 
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
@@ -10,6 +10,8 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.entity.Player
 import org.bukkit.scheduler.BukkitRunnable
+import org.bukkit.scheduler.BukkitTask
+import org.bukkit.util.io.BukkitObjectInputStream
 import plugin.thirdlife.Main
 import plugin.thirdlife.handlers.*
 import plugin.thirdlife.logger
@@ -38,7 +40,7 @@ class TLExec : CommandExecutor {
             "remove" -> addRemoveLives(sender, args, false)
             "give" -> giveLife(sender, args)
             "reset" -> reset(sender)
-            "endsession" -> endSession(sender)
+            "endsession" -> endSession(sender, args)
             "newsession" -> newSession(sender)
             "nick" -> nick(sender, args)
             else -> {
@@ -146,51 +148,86 @@ class TLExec : CommandExecutor {
         return Component.text("You have given a life to ").append(target.nick!!)
     }
 
-    private fun endSession(sender: CommandSender): Component{
+    private fun endSession(sender: CommandSender, args: Array<out String>): Component{
         checkAdminPermission(sender)
+
+        if (args.size < 2) {
+            throw IllegalArgumentException("End session operation is required: [now | countdown | cancel]")
+        }
+
+        // Cancel existing countdown
+        if (args[1].toLowerCase() == "cancel") {
+            if (!countdownOngiong) {
+                return Component.text("No countdown ongoing")
+            } else {
+                countdownOngiong = false
+                countdownTasks.forEach {
+                    it.cancel()
+                }
+                return Component.text("Cancelled countdown")
+            }
+        }
+
         if (countdownOngiong)
             return Component.text("Session end countdown is already ongoing")
         countdownOngiong = true
-
         // People who become ghouls after countdown start stay alive
         val ghouls = GhoulManager.getGhouls()
 
-        // Countdown to end of session
-        val countdownMin = 10
-        for (i in countdownMin downTo 0) {
-            object :  BukkitRunnable() {
-                override fun run() {
-                    if (i==0) {
-                        countdownOngiong = false
-                        // Broadcast start
-                        val color = NamedTextColor.RED
-                        val message = Component.text("Session has ended!").color(color)
-                        val title = Component.text("Session has ended!").color(color).decorate(TextDecoration.BOLD)
-                        Bukkit.broadcast(message)
-                        for (player in Bukkit.getOnlinePlayers()) {
-                            player.sendActionBar(title)
-                        }
-                        // End session
-                        GhoulManager.endSession(ghouls)
-                        ShadowManager.endSession()
-                    } else {
-                        // Broadcast countdown
-                        val color = if (countdownMin > 5) NamedTextColor.GREEN else NamedTextColor.GOLD
-                        val message = Component.text("Session ending in $i minutes").color(color)
-                        val title = Component.text("Session ending in $i minutes").color(color).decorate(TextDecoration.BOLD)
-                        Bukkit.broadcast(message)
-                        for (player in Bukkit.getOnlinePlayers()) {
-                            player.sendActionBar(title)
-                        }
-                    }
-                }
-            }.runTaskLater(Main.getInstance(), (10-i.toLong())*120) //TODO: Replace 120 with 1200, debug
+        // Immediate session end
+        if (args[1].toLowerCase() == "now") {
+            initEndSession(ghouls)
+            return Component.text("Session ended")
         }
 
-        return Component.text("Session ending in $countdownMin minutes")
+        if (args[1].toLowerCase() == "countdown") {
+            // Countdown to end of session
+            val countdownMin = 10
+            val scheduledRunnables = mutableListOf<BukkitTask>()
+            for (i in countdownMin downTo 0) {
+                val task = object : BukkitRunnable() {
+                    override fun run() {
+                        if (i == 0) {
+                            initEndSession(ghouls)
+                        } else {
+                            // Broadcast countdown
+                            val color = if (countdownMin > 5) NamedTextColor.GREEN else NamedTextColor.GOLD
+                            val message = Component.text("Session ending in $i minutes").color(color)
+                            val title = Component.text("Session ending in $i minutes").color(color)
+                                .decorate(TextDecoration.BOLD)
+                            Bukkit.broadcast(message)
+                            for (player in Bukkit.getOnlinePlayers()) {
+                                player.sendActionBar(title)
+                            }
+                        }
+                    }
+                }.runTaskLater(Main.getInstance(), (10 - i.toLong()) * 1200)
+                scheduledRunnables.add(task)
+            }
+            countdownTasks = scheduledRunnables
+            return Component.text("Session ending in $countdownMin minutes")
+        }
+
+        throw IllegalArgumentException("Unrecognised argument ${args[1]}")
+    }
+    // The actual session end procedure
+    private fun initEndSession(ghouls: List<LifePlayer>) {
+        // Broadcast start
+        val color = NamedTextColor.RED
+        val message = Component.text("Session has ended!").color(color)
+        val title = Component.text("Session has ended!").color(color).decorate(TextDecoration.BOLD)
+        Bukkit.broadcast(message)
+        for (player in Bukkit.getOnlinePlayers()) {
+            player.sendActionBar(title)
+        }
+        // End session
+        GhoulManager.endSession(ghouls)
+        ShadowManager.endSession()
+        countdownOngiong = false
     }
 
     private fun newSession(sender: CommandSender): Component {
+        checkAdminPermission(sender)
         // Broadcast start
         val color = NamedTextColor.GREEN
         val message = Component.text("").color(color)
@@ -256,6 +293,7 @@ class TLExec : CommandExecutor {
 
     companion object {
         var countdownOngiong = false
+        var countdownTasks = mutableListOf<BukkitTask>()
     }
 
 }
