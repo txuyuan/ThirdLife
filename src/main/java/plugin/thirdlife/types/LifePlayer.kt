@@ -155,12 +155,12 @@ class LifePlayer{
     fun allowedAdmin(): Boolean?{
         return allowed("thirdlife.admin")
     }
-    fun allowed(permission: String): Boolean{
+    fun allowed(permission: String): Boolean?{
         val onlinePlayer = LifeManager.getOnlinePlayer(offlinePlayer)
         if (onlinePlayer==null) {
             //logger().severe("Player $name not online for permission check")
             // Just operate on trust :)
-            return true
+            return null
         }
         return onlinePlayer.hasPermission(permission)
     }
@@ -210,17 +210,6 @@ class LifePlayer{
         val onlinePlayer = LifeManager.getOnlinePlayer(offlinePlayer) ?: return
         if(!allowedUse()!!) return
 
-        // Check if dead - simulate death without moving player
-        if(lives==-1){
-            if(!onlinePlayer.inventory.isEmpty){
-                onlinePlayer.inventory.forEach {
-                    onlinePlayer.location.world.dropItemNaturally(onlinePlayer.location, it)
-                    onlinePlayer.inventory.remove(it)
-                }
-            }
-            onlinePlayer.gameMode = GameMode.SPECTATOR
-        }else
-            onlinePlayer.gameMode = GameMode.SURVIVAL
 
         // Re-update nick
         onlinePlayer.displayName(nick)
@@ -229,6 +218,20 @@ class LifePlayer{
         setHealth(!this.isGhoul)
         if (this.isGhoul) {
             PlayersFile().setIsOldGhoul(uuid, true)
+        }
+
+        if (allowedAdmin() != true) {
+            // Check if dead - simulate death without moving player
+            if(lives==-1){
+                if(!onlinePlayer.inventory.isEmpty){
+                    onlinePlayer.inventory.forEach {
+                        onlinePlayer.location.world.dropItemNaturally(onlinePlayer.location, it)
+                        onlinePlayer.inventory.remove(it)
+                    }
+                }
+                onlinePlayer.gameMode = GameMode.SPECTATOR
+            }else
+                onlinePlayer.gameMode = GameMode.SURVIVAL
         }
 
         ScoreboardManager.updatePlayerBoards()

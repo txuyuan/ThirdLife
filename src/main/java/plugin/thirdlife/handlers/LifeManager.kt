@@ -12,8 +12,7 @@ import java.util.*
 object LifeManager {
 
     fun resetAll(){
-        getAllPlayers()
-            .forEach {
+        getAllPlayers().forEach {
 
             it.lives = LifeManager.getMaxLives()
             it.isOldGhoul = false

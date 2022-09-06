@@ -25,7 +25,6 @@ class TLExec : CommandExecutor {
         try{
             sender.sendStatus(exec(sender, args))
         }catch(exception: Exception){
-            logger().severe(exception.stackTraceToString())
             sender.sendError(exception.message ?: "An internal error occured")
         }
         return true
@@ -77,15 +76,7 @@ class TLExec : CommandExecutor {
         return getLivesStatus(target)
     }
     private fun getLivesStatus(target: LifePlayer): Component{
-        var livesStatus = Component.text("- ")
-            .append(Component.text(
-                when(target.lives) {
-                    -1 -> "dead"
-                    0 -> "ghoul"
-                    else -> "${target.lives} lives"
-            }).color(LifeManager.getLifeColours(target.lives))
-        )
-        val shadowStatus = Component.text("- ")
+        val shadowStatus = Component.text(" - ")
             .append(Component.text(
                 if (target.isShadow) "shadow"
                 else "not shadow"
@@ -97,7 +88,6 @@ class TLExec : CommandExecutor {
         val msg = Component.text("> ")
             .append(target.nick!!)
             .append(componentWhite())
-            .append(livesStatus)
             .append(shadowStatus)
 
         return msg
@@ -217,7 +207,7 @@ class TLExec : CommandExecutor {
         // Broadcast start
         val color = NamedTextColor.RED
         val message = Component.text("Session has ended!").color(color)
-        val title = Component.text("Session has ended!").color(color).decorate(TextDecoration.BOLD)
+        val title = message.decorate(TextDecoration.BOLD)
         Bukkit.broadcast(message)
         for (player in Bukkit.getOnlinePlayers()) {
             player.sendActionBar(title)
@@ -231,9 +221,12 @@ class TLExec : CommandExecutor {
     private fun newSession(sender: CommandSender): Component {
         checkAdminPermission(sender)
         // Broadcast start
-        val color = NamedTextColor.GREEN
-        val message = Component.text("").color(color)
-        val title = Component.text("SESSION START").color(color)
+        val messsage = Component.text("Session has started!").color(NamedTextColor.GREEN)
+        val title = messsage.decorate(TextDecoration.BOLD)
+        Bukkit.broadcast(messsage)
+        for (player in Bukkit.getOnlinePlayers()) {
+            player.sendActionBar(title)
+        }
 
         ShadowManager.newSession()
 

@@ -25,15 +25,19 @@ object ShadowManager {
             PlayersFile().setIsShadow(it.uuid, false)
         }
         // Assign shadow to random player
-        val newShadow = LifeManager.getAllPlayers().random()
+        val newShadow = LifeManager.getAllPlayers()
+            .filter { it.allowedAdmin() != true }
+            .random()
         newShadow.isShadow = true
         ScoreboardManager.updatePlayerBoards() //Force board update
 
         // Notify admins of shadow
         val admins = LifeManager.getAllPlayers().filter { it.allowedAdmin()==true }
         val shadowName = newShadow.name
+        val msg = "Assigned shadow is $shadowName"
+        logger().info(msg)
         admins.forEach {
-            it.onlinePlayer?.sendStatus("Assigned shadow is $shadowName")
+            it.onlinePlayer?.sendStatus(msg)
         }
     }
 
