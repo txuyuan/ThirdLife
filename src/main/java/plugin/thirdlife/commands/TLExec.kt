@@ -45,7 +45,8 @@ class TLExec : CommandExecutor {
             else -> {
                 object: BukkitRunnable() {
                     override fun run() {
-                        sender.sendHelp(helpMsg())
+                        val admin = (sender !is Player) || (LifePlayer((sender as Player).uniqueId).allowedAdmin() ?: false)
+                        sender.sendHelp(helpMsg(admin))
                     }
                 }.runTaskLater(Main.getInstance(), 1)
                 throw IllegalArgumentException("Unrecognised argument ${args[0]}")
@@ -269,15 +270,28 @@ class TLExec : CommandExecutor {
 
     // -------------- HELPERS ---------------
 
-    fun helpMsg(): Component{
-        val msg = """
+    fun helpMsg(isAdmin: Boolean): Component{
+        var msg = ""
+        if (isAdmin) {
+            msg = """
             §b§lThirdLife v${Bukkit.getPluginManager().getPlugin("ThirdLife")!!.description.version}§f
-            > §eget <target>§f
-            > §eadd <target>§f
-            > §eremove <target>§f
-            > §ereset§f
-            > §eendSession§f
+            > §7`add <target>`§f - Adds one life
+            > §7`remove <target>`§f - Removes one life
+            > §7`get <target>`§f - Gets life-count
+            > §7`reset`§f - Resets life system (lives, ghouls)
+            > §7`newsession`§f - Starts new session (allocate Shadow)
+            > §7`endSession [now|countdown|cancel]`§f - Ends session
+            > §7`nick <ownNick>`§f | §7`nick <target> <targetNick>`§f - Assigns nick
+            > §7`give <target>`§f - Gives one life
             """.trimIndent()
+        } else {
+            msg = """
+            §b§lThirdLife v${Bukkit.getPluginManager().getPlugin("ThirdLife")!!.description.version}§f
+            > §7`get`§f - Get your life count
+            > §7`give <target>`§f - Gives life to other player
+            """.trimIndent()
+        }
+
         return LegacyComponentSerializer.legacySection().deserialize(msg)
     }
 
