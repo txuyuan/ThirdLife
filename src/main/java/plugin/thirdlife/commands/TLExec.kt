@@ -184,13 +184,15 @@ class TLExec : CommandExecutor {
                         } else {
                             // Broadcast countdown
                             val color = if (countdownMin > 5) NamedTextColor.RED else NamedTextColor.YELLOW
-                            val message = Component.text("Session ending in $i minutes").color(color)
-                            val title = Component.text("Session ending in $i minutes").color(color)
+                            val msgContent = "Session ending in $i minutes"
+                            val message = Component.text(msgContent).color(color)
+                            val title = Component.text(msgContent).color(color)
                                 .decorate(TextDecoration.BOLD)
                             Bukkit.broadcast(message)
                             for (player in Bukkit.getOnlinePlayers()) {
                                 player.sendActionBar(title)
                             }
+                            logger().info(msgContent)
                         }
                     }
                 }.runTaskLater(Main.getInstance(), (10 - i.toLong()) * 1200)

@@ -15,15 +15,16 @@ object NickManager {
         if (rawNick==null) {
             return Component.text(player.name)
                 .color(LifeManager.getLifeColours(player.lives))
-                .append(componentWhite())
         }
-        return LegacyComponentSerializer.legacySection().deserialize(rawNick).append(Component.text().color(NamedTextColor.WHITE))
+        return LegacyComponentSerializer.legacySection().deserialize(rawNick)
     }
 
     fun setNick(player: LifePlayer, nick: Component?){
         val rawNick =
             if(nick==null) null
-            else LegacyComponentSerializer.legacySection().serialize(nick)
+            else LegacyComponentSerializer.legacySection().serialize(
+                nick.append(componentWhite())
+            )
         PlayersFile().setNick(player.uuid, rawNick)
         player.offlinePlayer.player?.displayName(getNick(player))
     }
