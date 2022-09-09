@@ -1,5 +1,5 @@
 ## ThirdLife Plugin
-Merely a rudimentary lives system inspired by the [3rd Life](https://www.youtube.com/results?search_query=3rd+Life) and [Last Life](https://www.youtube.com/results?search_query=Last+Life) series on Youtube.
+This plugin is inspired by the [3rd Life](https://www.youtube.com/results?search_query=3rd+Life) and [Last Life](https://www.youtube.com/results?search_query=Last+Life) series on Youtube, with various changes to suit the needs of Firebush.
 
 <br>
 
