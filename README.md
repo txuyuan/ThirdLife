@@ -41,7 +41,7 @@ At the end of the session, the person with the shadow touch will die
 * `remove <target>` - Removes one life from the specified target player. `<target>` defaults to self
 * `get <target>` - Gets `<target>`'s life-count, `<target>` defaults to self
 * `reset` - Resets life system (lives, ghouls)
-* `newsession` - Starts new session (allocate Shadow)
+* `newSession` - Starts new session (allocate Shadow)
 * `endSession [now|countdown|cancel]` - Ends session immediately, with 10 minute countdown, or cancels countdown
 * `nick <ownNick>` | `nick <target> <targetNick` - Assigns nick to player or self, ampersand colour codes work
 * `give <target>` - Gives life to other player
